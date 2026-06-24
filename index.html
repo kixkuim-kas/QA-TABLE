@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIX 安全管理デジタルサイネージ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: #111111; color: #ffffff;
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 40px; overflow: hidden;
+        }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #333; padding-bottom: 20px; }
+        h1 { font-size: 3.5rem; letter-spacing: 2px; }
+        #clock { font-size: 3rem; font-family: monospace; color: #aaaaaa; }
+        main { display: flex; gap: 40px; flex: 1; margin-top: 40px; }
+        .card {
+            flex: 1; background: #1e1e1e; border-radius: 20px; padding: 40px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid #333;
+        }
+        .card-title { font-size: 2.8rem; font-weight: bold; margin-bottom: 20px; color: #cccccc; }
+        .number-display { font-size: 11rem; font-weight: 900; font-family: 'Impact', sans-serif; line-height: 1; }
+        .unit { font-size: 3.5rem; font-weight: bold; margin-left: 10px; color: #ffffff; }
+        .safe { color: #00ff66; text-shadow: 0 0 30px rgba(0, 255, 102, 0.3); }
+        .warning { color: #ff3333; text-shadow: 0 0 30px rgba(255, 51, 51, 0.3); }
+        .count-up { color: #00ccff; text-shadow: 0 0 30px rgba(0, 204, 255, 0.3); }
+        footer { text-align: center; font-size: 1.5rem; color: #666666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>KIX 本日の安全衛生管理状況</h1>
+        <div id="clock">0000/00/00 00:00:00</div>
+    </header>
+
+    <main>
+        <div class="card">
+            <div class="card-title">本日の事件・事故数</div>
+            <div>
+                <span id="incident-count" class="number-display safe">-</span>
+                <span class="unit">件</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">連続無事故日数</div>
+            <div>
+                <span id="safe-days" class="number-display count-up">-</span>
+                <span class="unit">日</span>
+            </div>
+        </div>
+    </main>
+
+    <footer>今日も一日、安全第一でがんばりましょう。</footer>
+
+    <script>
+        // スプレッドシートのCSV公開URL
+        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?gid=0&single=true&output=csv';
+
+        async function fetchSpreadsheetData() {
+            try {
+                const response = await fetch(url);
+                const csvText = await response.text();
+                
+                const rows = csvText.replace(/\r/g, '').split('\n');
+                if (rows.length >= 2) {
+                    const dataRow = rows[1].split(',');
+                    
+                    // スプレッドシートのA列(KIX事件数)とB列(KIX無事故日数)を読み込み
+                    const incidentCount = parseInt(dataRow[0].trim()) || 0;
+                    const safeDays = parseInt(dataRow[1].trim()) || 0;
+
+                    const incidentEl = document.getElementById('incident-count');
+                    incidentEl.textContent = incidentCount;
+                    
+                    if (incidentCount > 0) {
+                        incidentEl.className = 'number-display warning';
+                    } else {
+                        incidentEl.className = 'number-display safe';
+                    }
+
+                    document.getElementById('safe-days').textContent = safeDays;
+                }
+            } catch (error) {
+                console.error('データの取得に失敗しました:', error);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = 
+                `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ` +
+                `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        fetchSpreadsheetData();
+        setInterval(fetchSpreadsheetData, 30000); // 30秒ごとに更新チェック
+    </script>
+</body>
+</html>
