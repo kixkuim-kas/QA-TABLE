@@ -110,4 +110,31 @@
 
                     const kixIncidentEl = document.getElementById('kix-incident');
                     kixIncidentEl.textContent = kixIncident;
-                    kixIncidentEl.
+                    kixIncidentEl.className = kixIncident > 0 ? 'number-display warning' : 'number-display safe';
+                    document.getElementById('kix-days').textContent = kixDays;
+
+                    const hndIncidentEl = document.getElementById('hnd-incident');
+                    hndIncidentEl.textContent = hndIncident;
+                    hndIncidentEl.className = hndIncident > 0 ? 'number-display warning' : 'number-display safe';
+                    document.getElementById('hnd-days').textContent = hndDays;
+                }
+            } catch (error) {
+                console.error('データの取得に失敗しました:', error);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = 
+                `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ` +
+                `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        fetchSpreadsheetData();
+        setInterval(fetchSpreadsheetData, 30000);
+    </script>
+</body>
+</html>
