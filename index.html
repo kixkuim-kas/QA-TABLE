@@ -55,7 +55,7 @@
         <div class="airport-section" style="border-top: 8px solid #00ccff;">
             <div class="airport-title" style="color: #00ccff;">KIX</div>
             <div class="card">
-                <div class="card-title">本日の事件・事故数</div>
+                <div class="card-title">当月累計</div>
                 <div>
                     <span id="kix-incident" class="number-display safe">-</span>
                     <span class="unit">件</span>
@@ -73,7 +73,7 @@
         <div class="airport-section" style="border-top: 8px solid #ff9900;">
             <div class="airport-title" style="color: #ff9900;">HND</div>
             <div class="card">
-                <div class="card-title">本日の事件・事故数</div>
+                <div class="card-title">当月累計</div>
                 <div>
                     <span id="hnd-incident" class="number-display safe">-</span>
                     <span class="unit">件</span>
@@ -103,16 +103,20 @@
                 if (rows.length >= 2) {
                     const dataRow = rows[1].split(',');
                     
+                    // 新しいスプレッドシートの並び順（A:KIX累計, B:KIX日数, C:HND累計, D:HND日数）
                     const kixIncident = parseInt(dataRow[0].trim()) || 0;
                     const kixDays     = parseInt(dataRow[1].trim()) || 0;
                     const hndIncident = parseInt(dataRow[2].trim()) || 0;
                     const hndDays     = parseInt(dataRow[3].trim()) || 0;
 
+                    // --- KIXの表示反映 ---
                     const kixIncidentEl = document.getElementById('kix-incident');
                     kixIncidentEl.textContent = kixIncident;
+                    // 当月累計が0件なら緑(safe)、1件以上なら赤(warning)
                     kixIncidentEl.className = kixIncident > 0 ? 'number-display warning' : 'number-display safe';
                     document.getElementById('kix-days').textContent = kixDays;
 
+                    // --- HNDの表示反映 ---
                     const hndIncidentEl = document.getElementById('hnd-incident');
                     hndIncidentEl.textContent = hndIncident;
                     hndIncidentEl.className = hndIncident > 0 ? 'number-display warning' : 'number-display safe';
@@ -134,7 +138,7 @@
         setInterval(updateClock, 1000);
 
         fetchSpreadsheetData();
-        setInterval(fetchSpreadsheetData, 30000);
+        setInterval(fetchSpreadsheetData, 30000); // 30秒ごとに更新
     </script>
 </body>
 </html>
