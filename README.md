@@ -1,2 +1,2 @@
 # QA-TABLE
-number of accident 
+KAS　Accident/Incident　Information 
