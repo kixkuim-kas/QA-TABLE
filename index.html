@@ -10,26 +10,31 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #ffffff;
             margin: 0;
-            padding: 1vw;
+            padding: 1.5vw;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
+        /* ヘッダー周り（会社名2行表示） */
         .header {
-            height: 10vh;
+            height: 12vh;
             display: flex;
             align-items: center;
+            margin-bottom: 1vh;
         }
-        .header img { height: 7vh; margin-right: 1.5vw; }
-        .header h1 { font-size: 3.5vh; color: #002f6c; margin: 0; }
+        .header img { height: 8vh; margin-right: 1.5vw; }
+        .header-text { line-height: 1.2; }
+        .header h1 { font-size: 3.2vh; color: #002f6c; margin: 0; }
+        .company-name { font-size: 2vh; color: #002f6c; font-weight: bold; }
 
         .main-container {
-            height: 85vh;
+            height: 82vh;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start; /* 上寄せに変更してバランスを調整 */
             gap: 2vw;
         }
 
@@ -39,17 +44,18 @@
             overflow-y: auto;
         }
         
-        table { width: 100%; border-collapse: collapse; font-size: 1.8vh; }
-        th, td { padding: 1vh; border-bottom: 1px solid #ddd; text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 1.6vh; margin-bottom: 2vh; }
+        th, td { padding: 0.8vh; border-bottom: 1px solid #ddd; text-align: left; }
         th { background-color: #002f6c; color: white; }
 
+        /* グラフエリア（上に少し寄せるためmarginTopを調整） */
         .chart-section {
             width: 45%;
-            height: 100%;
+            height: 80vh; 
+            margin-top: -3vh; /* 少し上に移動 */
             display: flex;
             justify-content: center;
             align-items: center;
-            /* ロゴを背景としてここに配置 */
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: center;
@@ -73,16 +79,19 @@
             width: 100%;
         }
         
-        .text-line1 { font-size: 2.5vh; color: #d32f2f; font-weight: bold; }
-        .text-line2 { font-size: 8vh; color: #002f6c; font-weight: bold; line-height: 1; }
-        .text-line3 { font-size: 3vh; color: #00bfff; font-weight: bold; }
+        .text-line1 { font-size: 2.2vh; color: #d32f2f; font-weight: bold; }
+        .text-line2 { font-size: 7vh; color: #002f6c; font-weight: bold; line-height: 1; }
+        .text-line3 { font-size: 2.5vh; color: #00bfff; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <img src="bg-logo.png" alt="Logo">
-        <h1>KAS Accident/Incident Information</h1>
+        <div class="header-text">
+            <h1>KAS Accident/Incident Information</h1>
+            <div class="company-name">KANSAI AIRPORTS<br>Aviation Services</div>
+        </div>
     </div>
 
     <div id="loading" style="font-size: 3vh; padding: 10vh;">読み込み中...</div>
@@ -128,7 +137,8 @@
                 document.getElementById('current-days-display').textContent = cur;
 
                 const ctx = document.getElementById('doughnutChart').getContext('2d');
-                new Chart(ctx, {
+                if(myChart) myChart.destroy();
+                myChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: { datasets: [{ data: [cur, Math.max(0, goal-cur)], backgroundColor: ['#00bfff', '#eee'] }] },
                     options: { cutout: '80%', plugins: { legend: { display: false } } }
