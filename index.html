@@ -19,11 +19,11 @@
 
         .header {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px; /* 画面を広く使います */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         .header h1 {
             color: #002f6c;
@@ -32,32 +32,32 @@
             line-height: 1.2;
         }
 
+        /* ★レイアウトを「グリッド」に変更し、グラフの大きさを強制的に守ります */
         .main-container {
             width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 40px;
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* 左(表)を1、右(グラフ)を1.2の比率で強制分割 */
+            gap: 60px; /* 表とグラフの隙間 */
+            align-items: center;
         }
 
+        /* 左側：表エリア */
         .table-section {
-            flex: 1.5;
-            display: flex;
-            flex-direction: column;
-            overflow-x: auto;
+            min-width: 0; /* 表が枠をはみ出してグラフを潰すのを防ぐ魔法のコード */
+            overflow-x: auto; /* はみ出た場合は表だけ横スクロールさせる */
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95em;
+            font-size: 1.05em; /* 表の文字も少し大きく */
             margin-bottom: 30px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
             text-align: left;
-            padding: 12px 15px;
+            padding: 14px 15px;
             border-bottom: 1px solid #e0e0e0;
             white-space: nowrap;
         }
@@ -72,8 +72,13 @@
         th:first-child { text-align: left; }
         th:not(:first-child), td:not(:first-child) { text-align: center; }
 
+        /* 右側：グラフエリア */
         .chart-section {
-            flex: 1;
+            min-width: 0;
+            width: 100%;
+            max-width: 700px; /* グラフの最大サイズを大きく設定 */
+            margin: 0 auto;
+            aspect-ratio: 1 / 1;
             position: relative;
             display: flex;
             justify-content: center;
@@ -81,50 +86,62 @@
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: center center;
-            background-size: 80%; 
+            background-size: 85%; 
         }
 
         .chart-container {
-            width: 85%;
-            aspect-ratio: 1 / 1;
+            width: 100%; 
+            height: 100%;
             position: relative;
             background-color: rgba(255, 255, 255, 0.7); 
             border-radius: 50%;
             padding: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
         }
         canvas {
             width: 100% !important;
             height: 100% !important;
         }
 
+        /* グラフ中央のテキスト */
         .chart-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            width: 90%;
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 1), -2px -2px 4px rgba(255, 255, 255, 1);
+            width: 95%;
+            text-shadow: 2px 2px 5px rgba(255, 255, 255, 1), -2px -2px 5px rgba(255, 255, 255, 1);
         }
         .text-line1 {
             color: #d32f2f;
-            font-size: 1.5em;
+            font-size: 2em; /* さらに大きく！ */
             font-weight: bold;
             line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 3.5em;
+            font-size: 5.5em; /* 数字を特大サイズに！ */
             font-weight: bold;
-            margin-top: 8px;
+            margin-top: 10px;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 1.8em;
+            font-size: 2.5em; /* さらに大きく！ */
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 12px;
+        }
+
+        /* 画面が狭い場合（スマホなど）は縦並びにする設定 */
+        @media (max-width: 1000px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .chart-section {
+                width: 90%;
+            }
         }
 
         .status-message { margin-top: 20px; font-size: 1.2em; color: #777; font-weight: bold; }
@@ -151,7 +168,7 @@
                 <canvas id="doughnutChart"></canvas>
                 <div class="chart-text">
                     <div class="text-line1">制限区域内<br>無事故日数目標</div>
-                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.4em; vertical-align: middle;">以上</span></div>
+                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.3em; vertical-align: middle;">以上</span></div>
                     <div class="text-line3"><span id="current-days-display">...</span>日 継続中！</div>
                 </div>
             </div>
@@ -160,7 +177,6 @@
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
-
         let myChart = null;
 
         function parseCSV(text) {
@@ -170,15 +186,15 @@
 
         async function loadData() {
             try {
+                // 最新データを取得
                 const response = await fetch(csvUrl + '&t=' + new Date().getTime());
                 if (!response.ok) throw new Error('ネットワークエラー');
                 const dataText = await response.text();
                 const data = parseCSV(dataText);
-                
                 updateUI(data);
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。URLや公開設定をご確認ください。</span>';
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。</span>';
             }
         }
 
@@ -213,17 +229,9 @@
                     tableSection.appendChild(table);
                 }
 
-                // 1. 制限区域内無事故日数目標の表（2行目と3行目のデータ）
-                if (data[1] && data[2]) {
-                    createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
-                }
-
-                // 2. 無事故連続日数の表（5行目と6行目のデータ）
-                if (data[4] && data[5]) {
-                    createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
-                }
-
-                // 3. Safety KPIの表（8行目以降のデータ）
+                // スプレッドシートの表を自動生成
+                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
+                if (data[4] && data[5]) createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
                 if (data[7]) {
                     const kpiRows = [];
                     for (let i = 8; i < data.length; i++) {
@@ -233,17 +241,18 @@
                     createTable(data[7].slice(0, 3), kpiRows);
                 }
 
-                // グラフの描画
+                /* ＝＝＝ ★B16・B17から数字を取得する処理 ＝＝＝ */
                 let goalDays = 105;
                 let currentDays = 100;
 
-                if (data[2] && data[2][1]) {
-                    const b3Value = parseInt(data[2][1], 10);
-                    if (!isNaN(b3Value)) goalDays = b3Value;
+                // 配列は0から数えるため、B16は[15][1]、B17は[16][1]になります
+                if (data.length > 15 && data[15] && data[15].length > 1) {
+                    const b16Value = parseInt(data[15][1], 10);
+                    if (!isNaN(b16Value)) goalDays = b16Value;
                 }
-                if (data[5] && data[5][1]) {
-                    const b6Value = parseInt(data[5][1], 10);
-                    if (!isNaN(b6Value)) currentDays = b6Value;
+                if (data.length > 16 && data[16] && data[16].length > 1) {
+                    const b17Value = parseInt(data[16][1], 10);
+                    if (!isNaN(b17Value)) currentDays = b17Value;
                 }
 
                 document.getElementById('goal-days-display').textContent = goalDays;
@@ -251,10 +260,8 @@
 
                 const remainingDays = Math.max(0, goalDays - currentDays); 
 
-                if (myChart) {
-                    myChart.destroy(); 
-                }
-
+                // グラフの描画
+                if (myChart) myChart.destroy(); 
                 const ctx = document.getElementById('doughnutChart').getContext('2d');
                 myChart = new Chart(ctx, {
                     type: 'doughnut',
@@ -273,20 +280,14 @@
                     }
                 });
 
-                // ロード画面を消してメイン画面を表示
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('main-container').style.display = 'flex';
+                document.getElementById('main-container').style.display = 'grid';
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。<br>スプレッドシートの行や列の形が変更されていないか確認してください。</span>';
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。</span>';
             }
         }
-
-        // 何らかの原因でJavaScript全体が停止した場合のエラー表示
-        window.onerror = function(msg) {
-            document.getElementById('loading').innerHTML = '<span class="error-msg">システムエラーが発生しました: ' + msg + '</span>';
-        };
 
         window.onload = loadData;
     </script>
