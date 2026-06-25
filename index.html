@@ -6,52 +6,47 @@
     <title>KAS Accident/Incident Information</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* すべてのサイズを画面幅（vw）基準にすることで、どんなモニターでも比率を維持します */
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
             background-color: #ffffff;
             color: #333;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden; 
+            padding: 2vw; /* 余白も画面幅に連動 */
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         .header {
-            width: 98%;
-            max-width: none; /* 大画面用に最大幅の制限を解除 */
+            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 2vw;
         }
         .header h1 {
             color: #002f6c;
-            /* 画面幅に合わせてタイトルも自動で巨大化します */
-            font-size: clamp(2.5em, 3.5vw, 6em);
+            font-size: 2.8vw; /* タイトルも画面幅に合わせて拡大 */
             margin: 0;
             line-height: 1.2;
         }
         .sub-title {
             color: #002f6c;
-            /* サブタイトルも画面幅に合わせて拡大 */
-            font-size: clamp(1.5em, 2vw, 4em);
+            font-size: 1.6vw; /* サブタイトル */
             font-weight: bold;
             margin: 0;
         }
         .header img {
-            /* ロゴマークも画面幅に合わせて拡大 */
-            height: clamp(40px, 4vw, 80px);
-            margin-right: 15px;
+            height: 4vw; /* ロゴの高さ */
+            margin-right: 1vw;
         }
 
         .main-container {
-            width: 98%; 
-            max-width: none; /* 大画面用に最大幅の制限を解除 */
+            width: 100%; 
             display: grid;
-            grid-template-columns: 1fr 1.3fr; 
-            gap: 40px; 
+            /* 左の表エリアと、右のグラフエリア（画面幅の45%に固定）で分割。これではみ出しを防ぎます */
+            grid-template-columns: 1fr 45vw; 
+            gap: 4vw; 
             align-items: center;
         }
 
@@ -63,15 +58,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            /* 表の文字も大画面では自動的に大きく見やすくなります */
-            font-size: clamp(1.05em, 1.3vw, 2.5em); 
-            margin-bottom: 30px; 
+            font-size: 1.1vw; /* 表の文字も大画面では自動的に大きく */
+            margin-bottom: 2vw; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
             text-align: left;
-            /* 表の余白も画面に合わせて自動調整 */
-            padding: clamp(14px, 1.2vw, 28px) 15px;
+            padding: 1vw 1.2vw;
             border-bottom: 1px solid #e0e0e0;
             white-space: nowrap;
         }
@@ -88,11 +81,7 @@
 
         /* 右側：グラフエリア */
         .chart-section {
-            min-width: 0;
             width: 100%;
-            /* 1000pxの制限を外し、モニターの高さの85%まで無限に巨大化するように変更 */
-            max-width: 85vh; 
-            margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
             display: flex;
@@ -102,19 +91,17 @@
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: left center; 
-            background-size: 150%; 
-            
-            container-type: inline-size; 
+            background-size: 140%; /* 背景ロゴのサイズ */
         }
 
         .chart-container {
-            width: 95%; 
-            height: 95%;
+            width: 90%; 
+            height: 90%;
             position: relative;
             background-color: rgba(255, 255, 255, 0.65); 
             backdrop-filter: blur(3px); 
             border-radius: 50%;
-            padding: 10px;
+            padding: 1vw;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             box-sizing: border-box;
         }
@@ -133,31 +120,31 @@
             width: 95%;
             
             text-shadow: 
-                0 0 15px rgba(255, 255, 255, 1),
-                0 0 30px rgba(255, 255, 255, 1),
-                2px 2px 5px rgba(255, 255, 255, 1), 
-                -2px -2px 5px rgba(255, 255, 255, 1);
+                0 0 1vw rgba(255, 255, 255, 1),
+                0 0 2vw rgba(255, 255, 255, 1),
+                0.2vw 0.2vw 0.5vw rgba(255, 255, 255, 1), 
+                -0.2vw -0.2vw 0.5vw rgba(255, 255, 255, 1);
         }
         
-        /* ★グラフ内の文字比率を大幅に引き上げました（限界まで拡大） */
+        /* ★グラフ内の文字も、画面の横幅（vw）を基準にして確実に大きくします */
         .text-line1 {
             color: #d32f2f;
-            font-size: 6cqi; /* 4.5 -> 6 に拡大 */
+            font-size: 1.8vw; 
             font-weight: bold;
             line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 17cqi; /* 13 -> 17 に特大化！ */
+            font-size: 5.5vw; /* 画面幅の5.5%の大きさ。サイネージなら超特大になります */
             font-weight: bold;
-            margin-top: 1cqi;
+            margin-top: 1vw;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 7.5cqi; /* 6 -> 7.5 に拡大 */
+            font-size: 2.3vw; 
             font-weight: bold;
-            margin-top: 3cqi;
+            margin-top: 1vw;
         }
 
         @media (max-width: 1000px) {
@@ -165,21 +152,23 @@
                 grid-template-columns: 1fr;
             }
             .chart-section {
-                max-width: 90vw;
+                width: 90vw;
             }
         }
 
-        .status-message { margin-top: 20px; font-size: 1.2em; color: #777; font-weight: bold; }
+        .status-message { margin-top: 2vw; font-size: 1.5vw; color: #777; font-weight: bold; }
         .error-msg { color: #d32f2f; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>KAS Accident/Incident Information</h1>
-        <div class="title-with-logo" style="display: flex; align-items: center; margin-top: 5px;">
+        <div class="title-with-logo" style="display: flex; align-items: center; margin-top: 0;">
             <img src="bg-logo.png" alt="KAS Logo">
-            <div class="sub-title">KANSAI AIRPORTS<br>Aviation Services</div>
+            <div>
+                <h1>KAS Accident/Incident Information</h1>
+                <div class="sub-title">KANSAI AIRPORTS Aviation Services</div>
+            </div>
         </div>
     </div>
 
@@ -253,63 +242,4 @@
                     tableSection.appendChild(table);
                 }
 
-                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
-                if (data[4] && data[5]) createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
-                if (data[7]) {
-                    const kpiRows = [];
-                    for (let i = 8; i < data.length; i++) {
-                        if (!data[i] || data[i][0] === "") break; 
-                        kpiRows.push(data[i].slice(0, 3));
-                    }
-                    createTable(data[7].slice(0, 3), kpiRows);
-                }
-
-                let goalDays = 105;
-                let currentDays = 100;
-
-                if (data.length > 15 && data[15] && data[15].length > 1) {
-                    const b16Value = parseInt(data[15][1], 10);
-                    if (!isNaN(b16Value)) goalDays = b16Value;
-                }
-                if (data.length > 16 && data[16] && data[16].length > 1) {
-                    const b17Value = parseInt(data[16][1], 10);
-                    if (!isNaN(b17Value)) currentDays = b17Value;
-                }
-
-                document.getElementById('goal-days-display').textContent = goalDays;
-                document.getElementById('current-days-display').textContent = currentDays;
-
-                const remainingDays = Math.max(0, goalDays - currentDays); 
-
-                if (myChart) myChart.destroy(); 
-                const ctx = document.getElementById('doughnutChart').getContext('2d');
-                myChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [currentDays, remainingDays],
-                            backgroundColor: ['#00bfff', '#e0e0e0'], 
-                            borderWidth: 0,
-                        }]
-                    },
-                    options: {
-                        cutout: '85%',
-                        plugins: { tooltip: { enabled: false } },
-                        maintainAspectRatio: true,
-                        responsive: true,
-                    }
-                });
-
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('main-container').style.display = 'grid';
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。</span>';
-            }
-        }
-
-        window.onload = loadData;
-    </script>
-</body>
-</html>
+                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0
