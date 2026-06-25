@@ -11,23 +11,22 @@
             background-color: #ffffff;
             margin: 0;
             padding: 1vw;
-            height: 100vh; /* 画面の高さを基準にする */
-            box-sizing: border-box;
-            overflow: hidden; /* 画面からはみ出した分は隠して強制的に収める */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .header {
-            height: 10vh; /* ヘッダーを高さの10%に固定 */
+            height: 10vh;
             display: flex;
             align-items: center;
-            margin-bottom: 1vh;
         }
-        .header img { height: 8vh; margin-right: 1vw; }
-        .header h1 { font-size: 3vh; color: #002f6c; margin: 0; }
+        .header img { height: 7vh; margin-right: 1.5vw; }
+        .header h1 { font-size: 3.5vh; color: #002f6c; margin: 0; }
 
-        /* メインエリア：画面の残り90%の高さに収める */
         .main-container {
-            height: 88vh; 
+            height: 85vh;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -35,30 +34,35 @@
         }
 
         .table-section {
-            width: 55%;
+            width: 50%;
             height: 100%;
-            overflow-y: auto; /* 表が長い場合はここだけスクロール */
+            overflow-y: auto;
         }
         
         table { width: 100%; border-collapse: collapse; font-size: 1.8vh; }
         th, td { padding: 1vh; border-bottom: 1px solid #ddd; text-align: left; }
         th { background-color: #002f6c; color: white; }
 
-        /* グラフエリア：横幅を確保しつつ、縦幅を画面内に制限 */
         .chart-section {
-            width: 40%;
-            height: 80vh; /* 画面縦幅の80%を上限にする */
+            width: 45%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            /* ロゴを背景としてここに配置 */
+            background-image: url('bg-logo.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.8;
         }
 
         .chart-container {
-            width: 100%;
-            max-width: 80vh; /* 正方形を保つため高さに合わせる */
+            width: 80%;
             aspect-ratio: 1 / 1;
             position: relative;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
         }
         
         .chart-text {
@@ -107,8 +111,8 @@
                 const text = await response.text();
                 const data = text.split(/\r?\n/).map(line => line.split(',').map(c => c.trim().replace(/^"(.*)"$/, '$1')));
                 
-                // 表生成
                 const tableSection = document.getElementById('table-section');
+                tableSection.innerHTML = '';
                 const createTable = (h, r) => {
                     const t = document.createElement('table');
                     t.innerHTML = `<thead><tr>${h.map(i=>`<th>${i}</th>`).join('')}</tr></thead><tbody>${r.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
@@ -118,13 +122,11 @@
                 if(data[4]) createTable(data[4].slice(0,4), [data[5].slice(0,4)]);
                 if(data[7]) createTable(data[7].slice(0,3), data.slice(8).filter(r=>r[0]).map(r=>r.slice(0,3)));
 
-                // 数字取得
                 const goal = parseInt(data[15][1]);
                 const cur = parseInt(data[16][1]);
                 document.getElementById('goal-days-display').textContent = goal;
                 document.getElementById('current-days-display').textContent = cur;
 
-                // グラフ
                 const ctx = document.getElementById('doughnutChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'doughnut',
