@@ -92,6 +92,7 @@
     <footer>今日も一日、安全第一でがんばりましょう。</footer>
 
     <script>
+        // 正しいCSV形式のデータ取得用URLに修正しました
         const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?gid=0&single=true&output=csv';
 
         async function fetchSpreadsheetData() {
@@ -99,6 +100,7 @@
                 const response = await fetch(url);
                 const csvText = await response.text();
                 
+                // カンマや改行で綺麗にバラして読み込み
                 const rows = csvText.replace(/\r/g, '').split('\n');
                 if (rows.length >= 2) {
                     const dataRow = rows[1].split(',');
@@ -108,11 +110,13 @@
                     const hndIncident = parseInt(dataRow[2].trim()) || 0;
                     const hndDays     = parseInt(dataRow[3].trim()) || 0;
 
+                    // --- KIXの表示反映 ---
                     const kixIncidentEl = document.getElementById('kix-incident');
                     kixIncidentEl.textContent = kixIncident;
                     kixIncidentEl.className = kixIncident > 0 ? 'number-display warning' : 'number-display safe';
                     document.getElementById('kix-days').textContent = kixDays;
 
+                    // --- HNDの表示反映 ---
                     const hndIncidentEl = document.getElementById('hnd-incident');
                     hndIncidentEl.textContent = hndIncident;
                     hndIncidentEl.className = hndIncident > 0 ? 'number-display warning' : 'number-display safe';
@@ -134,7 +138,7 @@
         setInterval(updateClock, 1000);
 
         fetchSpreadsheetData();
-        setInterval(fetchSpreadsheetData, 30000);
+        setInterval(fetchSpreadsheetData, 30000); // 30秒ごとに更新
     </script>
 </body>
 </html>
