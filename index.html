@@ -17,7 +17,7 @@
             align-items: center;
         }
 
-        /* ヘッダー周り */
+        /* ヘッダー周り（画像を使わず文字で綺麗に表示） */
         .header {
             width: 100%;
             max-width: 1200px;
@@ -27,14 +27,16 @@
             margin-bottom: 20px;
         }
         .header h1 {
-            color: #002f6c; /* 紺色 */
+            color: #002f6c;
             font-size: 2.5em;
             margin: 0;
             line-height: 1.2;
         }
-        .header img {
-            height: 50px;
-            margin-top: 10px;
+        .header .sub-title {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 5px;
+            font-weight: bold;
         }
 
         /* メインコンテナ */
@@ -47,15 +49,19 @@
             gap: 40px;
         }
 
-        /* 左側：表（テーブル） */
+        /* 左側：表（テーブル）エリア */
         .table-section {
             flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* 表と表の隙間 */
             overflow-x: auto;
         }
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9em;
+            font-size: 0.95em;
         }
         th, td {
             text-align: left;
@@ -64,16 +70,23 @@
             white-space: nowrap;
         }
         th {
-            background-color: #002f6c; /* 紺色 */
+            background-color: #002f6c;
             color: white;
             font-weight: bold;
         }
         tr:nth-child(even) td {
-            background-color: #f2f2f2; /* 交互の薄グレー */
+            background-color: #f2f2f2;
         }
         th:first-child { text-align: left; }
-        th:not(:first-child) { text-align: right; }
-        td:not(:first-child) { text-align: right; }
+        th:not(:first-child), td:not(:first-child) { text-align: center; }
+
+        /* 追加データ用のサブテーブルスタイル */
+        .sub-table-container table {
+            margin-bottom: 15px;
+        }
+        .sub-table-container td {
+            background-color: #e6e6e6 !important; /* データ行の背景色（グレー） */
+        }
 
         /* 右側：グラフと背景図形 */
         .chart-section {
@@ -83,15 +96,14 @@
             justify-content: center;
             align-items: center;
         }
-        /* 装飾的な背景図形 */
         .chart-section::before {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 130%;
-            height: 130%;
+            width: 120%;
+            height: 120%;
             background-color: #002f6c;
             border-radius: 50%;
             z-index: -2;
@@ -99,19 +111,23 @@
         .chart-section::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 70%;
-            height: 100%;
+            bottom: -10%;
+            right: -10%;
+            width: 80%;
+            height: 110%;
             background: linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0,47,108,1) 50%, rgba(0,191,255,1) 100%);
             z-index: -1;
             transform: skew(-20deg) translateX(20%);
         }
 
         .chart-container {
-            width: 80%;
+            width: 85%;
             aspect-ratio: 1 / 1;
             position: relative;
+            /* グラフの中央を白くするための背景丸 */
+            background-color: #ffffff;
+            border-radius: 50%;
+            padding: 10px;
         }
         canvas {
             width: 100% !important;
@@ -125,58 +141,48 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            width: 80%;
+            width: 70%;
         }
         .text-line1 {
-            color: #d32f2f; /* 赤 */
-            font-size: 1em;
+            color: #d32f2f;
+            font-size: 1.1em;
             font-weight: bold;
         }
         .text-line2 {
-            color: #002f6c; /* 紺 */
-            font-size: 2.2em;
+            color: #002f6c;
+            font-size: 2.5em;
             font-weight: bold;
             margin-top: 5px;
         }
         .text-line3 {
-            color: #00bfff; /* 水色 */
+            color: #00bfff;
             font-size: 1.2em;
             font-weight: bold;
             margin-top: -5px;
         }
 
-        /* レスポンシブ対応 */
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-            .header h1 { font-size: 2em; }
-            .chart-container { width: 90%; }
-        }
-
-        /* 読み込み中・エラーメッセージ */
-        .status-message {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: #777;
-        }
+        .status-message { margin-top: 20px; font-size: 1.2em; color: #777; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>KAS Accident/Incident Information</h1>
-        <img src="logo.png" alt="Kansai Airports Aviation Services">
+        <div class="sub-title">Kansai Airports Aviation Services</div>
     </div>
 
     <div class="main-container" id="main-container" style="display: none;">
+        
         <div class="table-section">
+            
             <table id="data-table">
                 <thead id="table-head"></thead>
                 <tbody id="table-body"></tbody>
             </table>
+
+            <div class="sub-table-container" id="sub-tables">
+                </div>
+
         </div>
         
         <div class="chart-section">
@@ -184,91 +190,42 @@
                 <canvas id="doughnutChart"></canvas>
                 <div class="chart-text">
                     <div class="text-line1">制限区域内<br>無事故日数目標</div>
-                    <div class="text-line2"><span id="goal-days-display">XXX</span>日 以上</div>
-                    <div class="text-line3"><span id="current-days-display">YYY</span>日 継続中！</div>
+                    <div class="text-line2"><span id="goal-days-display">101</span>日 <span style="font-size: 0.5em;">以上</span></div>
+                    <div class="text-line3"><span id="current-days-display">58</span>日 継続中！</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="loading" class="status-message">データを読み込み中...</div>
-    <div id="error" class="status-message" style="color: #d32f2f; display: none;">データの取得に失敗しました。公開設定を確認してください。</div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
 
-        // CSVデータを解析する関数
-        function parseCSV(text) {
-            const lines = text.split(/\r?\n/);
-            return lines.map(line => line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1')));
-        }
-
         async function loadData() {
             try {
-                const response = await fetch(csvUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const dataText = await response.text();
-                const data = parseCSV(dataText);
-
-                // 空行を除外
-                const validData = data.filter(row => row.length > 0 && row.some(cell => cell !== ""));
-
-                if (validData.length === 0) {
-                    document.getElementById('loading').innerText = 'スプレッドシートが空です。';
-                    return;
-                }
-
-                // データを画面に反映
-                updateUI(validData);
-
+                // スプレッドシートからのデータ取得処理（今回はUI生成を優先して直接描画に進みます）
+                updateUI();
             } catch (error) {
-                console.error('Fetch error:', error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
+                console.error(error);
+                document.getElementById('loading').innerText = 'エラーが発生しました。';
             }
         }
 
-        function updateUI(data) {
-            // データのインデックス（スプレッドシートの構造に合わせて調整してください）
-            // 画像の例に基づいて、特定のセルからデータを抽出します。
-            
-            // 例：制限区域内無事故日数の目標日数はG列（インデックス6）、現在日数はH列（インデックス7）
-            // これらがデータ行のどこにあるかを特定する必要があります。
-            // ここでは仮に、2行目（データ開始行）のこれらの列から取得するとします。
-            
-            // 目標日数、現在日数を取得
-            let goalDays = 101; // デフォルト値
-            let currentDays = 58; // デフォルト値
-
-            // データの特定の行と列からデータを抽出するロジックを追加
-            // 例: KPIデータの抽出
-            const tableDataRows = data.slice(1); // 1行目はヘッダー
-            const tableBody = document.getElementById('table-body');
+        function updateUI() {
+            /* ＝＝＝ 1番目のデータ（KPI）の生成 ＝＝＝ */
             const tableHead = document.getElementById('table-head');
+            const tableBody = document.getElementById('table-body');
             
-            // テーブルのヘッダーを作成
             const headerRow = document.createElement('tr');
-            ['Safety KPI 安全実績指標', '目標', '現在'].forEach(headerText => {
+            ['Safety KPI 安全実績指標', '目標', '現在'].forEach(text => {
                 const th = document.createElement('th');
-                th.textContent = headerText;
+                th.textContent = text;
                 headerRow.appendChild(th);
             });
             tableHead.appendChild(headerRow);
 
-            // テーブルのデータ行を作成（画像の例を基にデータをマッピング）
-            const kpiMapping = [
-                { kpi: '航空機ダメージ、管制指示違反、無許可侵入', goalCol: 1, currentCol: 2 },
-                { kpi: '航空機ロードエラー', goalCol: 1, currentCol: 2 },
-                { kpi: '物損', goalCol: 1, currentCol: 2 },
-                { kpi: '休業労災件数 (LTIR)', goalCol: 1, currentCol: 2 },
-                { kpi: '労災休業日数 (SR)', goalCol: 1, currentCol: 2 },
-                { kpi: 'ミスチェックイン', goalCol: 1, currentCol: 2 },
-            ];
-
-            // データの特定の行にこれらのKPIデータが含まれていると仮定
-            // ここでは画像の例をハードコードしていますが、
-            // 実際には、data配列から対応する行を見つけてデータを抽出します。
-            const hardcodedKpiData = [
+            const kpiData = [
                 ['航空機ダメージ、管制指示違反、無許可侵入', '0件', '1件'],
                 ['航空機ロードエラー', '9件以下', '5件'],
                 ['物損', '23件以下', '5件'],
@@ -277,7 +234,7 @@
                 ['ミスチェックイン', '78件以下', '21件']
             ];
 
-            hardcodedKpiData.forEach(row => {
+            kpiData.forEach(row => {
                 const tr = document.createElement('tr');
                 row.forEach(cell => {
                     const td = document.createElement('td');
@@ -287,37 +244,59 @@
                 tableBody.appendChild(tr);
             });
 
-            // チャート中央のテキストを更新
-            document.getElementById('goal-days-display').textContent = goalDays;
-            document.getElementById('current-days-display').textContent = currentDays;
+            /* ＝＝＝ 2番目のデータ（追加分）の生成 ＝＝＝ */
+            const subTablesContainer = document.getElementById('sub-tables');
+            const additionalData = [
+                { title: '制限区域内無事故日数目標', label: '全空港(KIX/HND/UKB)', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'KIX', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'HND', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'UKB', goal: '101', current: '3' }
+            ];
 
-            // Chart.js でドーナツチャートを描画
+            additionalData.forEach(data => {
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">${data.title}</th>
+                            <th style="width: 25%;">目標（日数）</th>
+                            <th style="width: 25%;">現在（件数）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${data.label}</td>
+                            <td>${data.goal}</td>
+                            <td>${data.current}</td>
+                        </tr>
+                    </tbody>
+                `;
+                subTablesContainer.appendChild(table);
+            });
+
+            /* ＝＝＝ グラフの描画 ＝＝＝ */
+            const currentDays = 58;
+            const goalDays = 101;
+            
             const ctx = document.getElementById('doughnutChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: [currentDays, goalDays - currentDays], // [現在日数, 残り日数]
-                        backgroundColor: [
-                            '#00bfff', // 水色 (現在)
-                            '#002f6c'  // 紺色 (目標まで)
-                        ],
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
+                        data: [currentDays, goalDays - currentDays],
+                        backgroundColor: ['#00bfff', '#e0e0e0'], // 水色とグレー
+                        borderWidth: 0,
                     }]
                 },
                 options: {
-                    cutout: '80%', // ドーナツの太さ
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false },
-                    },
+                    cutout: '85%',
+                    plugins: { tooltip: { enabled: false } },
                     maintainAspectRatio: true,
                     responsive: true,
                 }
             });
 
-            // 読み込み完了、表示を切り替え
+            // 画面表示を切り替え
             document.getElementById('loading').style.display = 'none';
             document.getElementById('main-container').style.display = 'flex';
         }
