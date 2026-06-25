@@ -15,15 +15,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden; /* 横スクロールを防止 */
         }
 
         .header {
-            width: 100%;
-            max-width: 1400px; 
+            width: 98%;
+            max-width: 1800px; /* 大画面にも対応 */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .header h1 {
             color: #002f6c;
@@ -33,11 +34,11 @@
         }
 
         .main-container {
-            width: 100%;
-            max-width: 1400px;
+            width: 98%; /* 画面幅いっぱいまで使う */
+            max-width: 1800px;
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 50px; 
+            grid-template-columns: 1fr 1.3fr; /* グラフ側(右)を大幅に広く確保 */
+            gap: 40px; 
             align-items: center;
         }
 
@@ -74,7 +75,8 @@
         .chart-section {
             min-width: 0;
             width: 100%;
-            max-width: 600px; 
+            /* ★画面の高さ(vh)に合わせて限界まで自動拡大する魔法の設定 */
+            max-width: min(1000px, 80vh); 
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
@@ -82,21 +84,21 @@
             justify-content: center;
             align-items: center;
             
-            /* ★変更箇所：ロゴを左いっぱいに配置し、大きくしました */
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: left center; /* 左寄せ */
-            background-size: 140%; /* 枠からはみ出るくらい大きく表示 */
+            background-size: 150%; /* 背景ロゴも特大化して画面いっぱいに */
+            
+            /* ★グラフの拡大に合わせて文字も自動拡大させる最新機能 */
+            container-type: inline-size; 
         }
 
         .chart-container {
-            width: 90%; 
-            height: 90%;
+            width: 95%; /* 枠いっぱいまで円を広げる */
+            height: 95%;
             position: relative;
-            
-            /* ★変更箇所：ロゴが強くなるため、文字の視認性を守るために白背景を少しだけ濃く（0.65）しました */
             background-color: rgba(255, 255, 255, 0.65); 
-            backdrop-filter: blur(3px); /* 背景のロゴをほんの少しぼかして文字を浮き立たせます */
+            backdrop-filter: blur(3px); /* 磨りガラス効果で文字を読みやすく */
             border-radius: 50%;
             padding: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
@@ -116,31 +118,33 @@
             text-align: center;
             width: 95%;
             
-            /* ★文字の周りの白い発光（フチドリ）をさらに強くして、絶対に読めるようにしました */
+            /* ★白い発光（フチドリ）を最強にして、どんな背景でも読めるように */
             text-shadow: 
                 0 0 15px rgba(255, 255, 255, 1),
                 0 0 30px rgba(255, 255, 255, 1),
                 2px 2px 5px rgba(255, 255, 255, 1), 
                 -2px -2px 5px rgba(255, 255, 255, 1);
         }
+        
+        /* フォントサイズを「cqi（グラフの横幅に対する割合）」にすることで、グラフの巨大化に完全連動します */
         .text-line1 {
             color: #d32f2f;
-            font-size: 1.8em; 
+            font-size: 4.5cqi; 
             font-weight: bold;
             line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 5em; 
+            font-size: 13cqi; /* 特大サイズに連動 */
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 2cqi;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 2.3em; 
+            font-size: 6cqi; 
             font-weight: bold;
-            margin-top: 12px;
+            margin-top: 3cqi;
         }
 
         @media (max-width: 1000px) {
@@ -148,7 +152,7 @@
                 grid-template-columns: 1fr;
             }
             .chart-section {
-                width: 90%;
+                max-width: 90vw;
             }
         }
 
