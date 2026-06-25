@@ -17,7 +17,6 @@
             align-items: center;
         }
 
-        /* ヘッダー周り */
         .header {
             width: 100%;
             max-width: 1200px;
@@ -33,7 +32,6 @@
             line-height: 1.2;
         }
 
-        /* メインコンテナ */
         .main-container {
             width: 100%;
             max-width: 1200px;
@@ -43,7 +41,6 @@
             gap: 40px;
         }
 
-        /* 左側：表（テーブル）エリア */
         .table-section {
             flex: 1.5;
             display: flex;
@@ -55,7 +52,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.95em;
-            margin-bottom: 30px; /* 表と表の間に余白を作る */
+            margin-bottom: 30px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
@@ -75,7 +72,6 @@
         th:first-child { text-align: left; }
         th:not(:first-child), td:not(:first-child) { text-align: center; }
 
-        /* 右側：グラフと背景ロゴ */
         .chart-section {
             flex: 1;
             position: relative;
@@ -102,7 +98,6 @@
             height: 100% !important;
         }
 
-        /* グラフ中央のテキスト */
         .chart-text {
             position: absolute;
             top: 50%;
@@ -119,4 +114,181 @@
             line-height: 1.2;
         }
         .text-line2 {
-            color:
+            color: #002f6c;
+            font-size: 3.5em;
+            font-weight: bold;
+            margin-top: 8px;
+            line-height: 1;
+        }
+        .text-line3 {
+            color: #00bfff;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-message { margin-top: 20px; font-size: 1.2em; color: #777; font-weight: bold; }
+        .error-msg { color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>KAS Accident/Incident Information</h1>
+        <div class="title-with-logo" style="display: flex; align-items: center; margin-top: 5px;">
+            <img src="bg-logo.png" alt="KAS Logo" style="height: 40px; margin-right: 15px;">
+            <div class="sub-title" style="color: #002f6c; font-size: 1.5em; font-weight: bold; margin: 0;">KANSAI AIRPORTS<br>Aviation Services</div>
+        </div>
+    </div>
+
+    <div id="loading" class="status-message">データを読み込み中...</div>
+
+    <div class="main-container" id="main-container" style="display: none;">
+        <div class="table-section" id="table-section"></div>
+        
+        <div class="chart-section">
+            <div class="chart-container">
+                <canvas id="doughnutChart"></canvas>
+                <div class="chart-text">
+                    <div class="text-line1">制限区域内<br>無事故日数目標</div>
+                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.4em; vertical-align: middle;">以上</span></div>
+                    <div class="text-line3"><span id="current-days-display">...</span>日 継続中！</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
+
+        let myChart = null;
+
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/);
+            return lines.map(line => line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1')));
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(csvUrl + '&t=' + new Date().getTime());
+                if (!response.ok) throw new Error('ネットワークエラー');
+                const dataText = await response.text();
+                const data = parseCSV(dataText);
+                
+                updateUI(data);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。URLや公開設定をご確認ください。</span>';
+            }
+        }
+
+        function updateUI(data) {
+            try {
+                const tableSection = document.getElementById('table-section');
+                tableSection.innerHTML = ''; 
+
+                function createTable(headers, rows) {
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const trHead = document.createElement('tr');
+                    headers.forEach(text => {
+                        const th = document.createElement('th');
+                        th.textContent = text;
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    rows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(text => {
+                            const td = document.createElement('td');
+                            td.textContent = text;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    tableSection.appendChild(table);
+                }
+
+                // 1. 制限区域内無事故日数目標の表（2行目と3行目のデータ）
+                if (data[1] && data[2]) {
+                    createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
+                }
+
+                // 2. 無事故連続日数の表（5行目と6行目のデータ）
+                if (data[4] && data[5]) {
+                    createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
+                }
+
+                // 3. Safety KPIの表（8行目以降のデータ）
+                if (data[7]) {
+                    const kpiRows = [];
+                    for (let i = 8; i < data.length; i++) {
+                        if (!data[i] || data[i][0] === "") break; 
+                        kpiRows.push(data[i].slice(0, 3));
+                    }
+                    createTable(data[7].slice(0, 3), kpiRows);
+                }
+
+                // グラフの描画
+                let goalDays = 105;
+                let currentDays = 100;
+
+                if (data[2] && data[2][1]) {
+                    const b3Value = parseInt(data[2][1], 10);
+                    if (!isNaN(b3Value)) goalDays = b3Value;
+                }
+                if (data[5] && data[5][1]) {
+                    const b6Value = parseInt(data[5][1], 10);
+                    if (!isNaN(b6Value)) currentDays = b6Value;
+                }
+
+                document.getElementById('goal-days-display').textContent = goalDays;
+                document.getElementById('current-days-display').textContent = currentDays;
+
+                const remainingDays = Math.max(0, goalDays - currentDays); 
+
+                if (myChart) {
+                    myChart.destroy(); 
+                }
+
+                const ctx = document.getElementById('doughnutChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [currentDays, remainingDays],
+                            backgroundColor: ['#00bfff', '#e0e0e0'], 
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        cutout: '85%',
+                        plugins: { tooltip: { enabled: false } },
+                        maintainAspectRatio: true,
+                        responsive: true,
+                    }
+                });
+
+                // ロード画面を消してメイン画面を表示
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-container').style.display = 'flex';
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。<br>スプレッドシートの行や列の形が変更されていないか確認してください。</span>';
+            }
+        }
+
+        // 何らかの原因でJavaScript全体が停止した場合のエラー表示
+        window.onerror = function(msg) {
+            document.getElementById('loading').innerHTML = '<span class="error-msg">システムエラーが発生しました: ' + msg + '</span>';
+        };
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
