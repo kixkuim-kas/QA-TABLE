@@ -81,7 +81,7 @@
             background-color: #e6e6e6 !important;
         }
 
-        /* 右側：グラフと【背景ロゴ】 */
+        /* 右側：グラフと背景ロゴ */
         .chart-section {
             flex: 1;
             position: relative;
@@ -89,7 +89,6 @@
             justify-content: center;
             align-items: center;
             
-            /* アップロードしていただいた bg-logo.png を背景に設定 */
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: center center;
@@ -100,7 +99,6 @@
             width: 85%;
             aspect-ratio: 1 / 1;
             position: relative;
-            /* 後ろのロゴが綺麗に透けるように、白の透明度を 0.7 に調整 */
             background-color: rgba(255, 255, 255, 0.7); 
             border-radius: 50%;
             padding: 10px;
@@ -166,8 +164,8 @@
                 <canvas id="doughnutChart"></canvas>
                 <div class="chart-text">
                     <div class="text-line1">制限区域内<br>無事故日数目標</div>
-                    <div class="text-line2"><span id="goal-days-display">101</span>日 <span style="font-size: 0.5em;">以上</span></div>
-                    <div class="text-line3"><span id="current-days-display">58</span>日 継続中！</div>
+                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.5em;">以上</span></div>
+                    <div class="text-line3"><span id="current-days-display">...</span>日 継続中！</div>
                 </div>
             </div>
         </div>
@@ -178,17 +176,49 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
 
+        // CSVデータを扱いやすい形に分解する関数
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/);
+            return lines.map(line => line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1')));
+        }
+
+        // スプレッドシートのデータを取得する処理
         async function loadData() {
             try {
-                updateUI();
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error('ネットワークエラー');
+                const dataText = await response.text();
+                const data = parseCSV(dataText);
+                
+                updateUI(data); // 取得したデータを画面を作る関数に渡す
             } catch (error) {
                 console.error(error);
-                document.getElementById('loading').innerText = 'エラーが発生しました。';
+                updateUI([]); // エラー時は空っぽのデータを渡してデフォルト表示にする
             }
         }
 
-        function updateUI() {
-            /* 1番目のデータ（KPI）の生成 */
+        function updateUI(data) {
+            /* ＝＝＝ スプレッドシートから目標日数と現在日数を取得 ＝＝＝ */
+            // プログラムでは1行目を「0」と数えるため、20行目は「19」、21行目は「20」になります。B列は「1」です。
+            let goalDays = 101;     // 読み込み失敗時のデフォルト値
+            let currentDays = 58;   // 読み込み失敗時のデフォルト値
+
+            // スプレッドシートのデータがちゃんとB21セルまで存在するかチェック
+            if (data && data.length > 20 && data[19].length > 1 && data[20].length > 1) {
+                const b20Value = parseInt(data[19][1], 10); // B20（目標日数）を取得
+                const b21Value = parseInt(data[20][1], 10); // B21（現在日数）を取得
+
+                // 数字として正しく読み込めていれば上書きする
+                if (!isNaN(b20Value)) goalDays = b20Value;
+                if (!isNaN(b21Value)) currentDays = b21Value;
+            }
+
+            // 画面の数字をスプレッドシートの値に書き換える
+            document.getElementById('goal-days-display').textContent = goalDays;
+            document.getElementById('current-days-display').textContent = currentDays;
+
+
+            /* ＝＝＝ 左側の表の生成（現状は固定のデザインを維持） ＝＝＝ */
             const tableHead = document.getElementById('table-head');
             const tableBody = document.getElementById('table-body');
             
@@ -219,7 +249,6 @@
                 tableBody.appendChild(tr);
             });
 
-            /* 2番目のデータ（追加分）の生成 */
             const subTablesContainer = document.getElementById('sub-tables');
             const additionalData = [
                 { title: '制限区域内無事故日数目標', label: '全空港(KIX/HND/UKB)', goal: '101', current: '3' },
@@ -249,16 +278,16 @@
                 subTablesContainer.appendChild(table);
             });
 
-            /* グラフの描画 */
-            const currentDays = 58;
-            const goalDays = 101;
-            
+            /* ＝＝＝ グラフの描画 ＝＝＝ */
+            // 現在日数が目標を超えた場合（マイナスになる場合）にグラフがおかしくならないよう調整
+            const remainingDays = Math.max(0, goalDays - currentDays); 
+
             const ctx = document.getElementById('doughnutChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: [currentDays, goalDays - currentDays],
+                        data: [currentDays, remainingDays], // [水色の部分, グレーの部分]
                         backgroundColor: ['#00bfff', '#e0e0e0'], 
                         borderWidth: 0,
                     }]
@@ -275,6 +304,7 @@
             document.getElementById('main-container').style.display = 'flex';
         }
 
+        // ページが開かれたら処理をスタート
         window.onload = loadData;
     </script>
 </body>
