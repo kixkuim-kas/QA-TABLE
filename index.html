@@ -6,65 +6,71 @@
     <title>KAS Accident/Incident Information</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* すべてのサイズを画面幅（vw）基準にすることで、どんなモニターでも比率を維持します */
+        /* すべてのサイズを画面全体の横幅（vw）基準にすることで、古いブラウザでも絶対にフリーズせず、比率を維持して巨大化します */
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
             background-color: #ffffff;
             color: #333;
             margin: 0;
-            padding: 2vw; /* 余白も画面幅に連動 */
+            padding: 2vw; 
             box-sizing: border-box;
             overflow-x: hidden;
         }
 
         .header {
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
             margin-bottom: 2vw;
         }
         .header h1 {
             color: #002f6c;
-            font-size: 2.8vw; /* タイトルも画面幅に合わせて拡大 */
+            font-size: 3.5vw; /* タイトルを大画面用に大きく */
             margin: 0;
             line-height: 1.2;
         }
         .sub-title {
             color: #002f6c;
-            font-size: 1.6vw; /* サブタイトル */
+            font-size: 1.8vw; 
             font-weight: bold;
             margin: 0;
+            line-height: 1.2;
         }
         .header img {
-            height: 4vw; /* ロゴの高さ */
-            margin-right: 1vw;
+            height: 4.5vw; 
+            margin-right: 1.5vw;
+            float: left;
+        }
+        /* ロゴとタイトルの横並び崩れ防止 */
+        .title-with-logo::after {
+            content: "";
+            display: block;
+            clear: both;
         }
 
+        /* フリーズの原因となるGridを廃止し、最も確実で軽量なFlexboxに変更 */
         .main-container {
             width: 100%; 
-            display: grid;
-            /* 左の表エリアと、右のグラフエリア（画面幅の45%に固定）で分割。これではみ出しを防ぎます */
-            grid-template-columns: 1fr 45vw; 
-            gap: 4vw; 
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
+        /* 左側：表エリア（全体の50%の幅に固定してはみ出しを防止） */
         .table-section {
-            min-width: 0; 
+            width: 50%;
+            min-width: 0;
             overflow-x: auto; 
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 1.1vw; /* 表の文字も大画面では自動的に大きく */
-            margin-bottom: 2vw; 
+            font-size: 1.2vw; /* サイネージ向けに表の文字を大きく */
+            margin-bottom: 2.5vw; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
             text-align: left;
-            padding: 1vw 1.2vw;
+            padding: 1.2vw 1.5vw; /* 線の隙間を広げて遠くからでも見やすく */
             border-bottom: 1px solid #e0e0e0;
             white-space: nowrap;
         }
@@ -79,10 +85,10 @@
         th:first-child { text-align: left; }
         th:not(:first-child), td:not(:first-child) { text-align: center; }
 
-        /* 右側：グラフエリア */
+        /* 右側：グラフエリア（vwで縦横のサイズを完全に固定し、画面外への切切れを防ぎます） */
         .chart-section {
-            width: 100%;
-            aspect-ratio: 1 / 1;
+            width: 42vw;       /* 画面幅の42%の正方形に完全固定 */
+            height: 42vw;      
             position: relative;
             display: flex;
             justify-content: center;
@@ -91,18 +97,15 @@
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
             background-position: left center; 
-            background-size: 140%; /* 背景ロゴのサイズ */
+            background-size: 140%; 
         }
 
         .chart-container {
-            width: 90%; 
-            height: 90%;
+            width: 100%; 
+            height: 100%;
             position: relative;
             background-color: rgba(255, 255, 255, 0.65); 
-            backdrop-filter: blur(3px); 
             border-radius: 50%;
-            padding: 1vw;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             box-sizing: border-box;
         }
         canvas {
@@ -126,44 +129,52 @@
                 -0.2vw -0.2vw 0.5vw rgba(255, 255, 255, 1);
         }
         
-        /* ★グラフ内の文字も、画面の横幅（vw）を基準にして確実に大きくします */
+        /* エラーの原因となったcqi単位を廃止し、確実・強力に拡大するvw単位に統一 */
         .text-line1 {
             color: #d32f2f;
-            font-size: 1.8vw; 
+            font-size: 2.2vw; 
             font-weight: bold;
-            line-height: 1.2;
+            line-height: 1.3;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 5.5vw; /* 画面幅の5.5%の大きさ。サイネージなら超特大になります */
+            font-size: 6.5vw; /* 数字をサイネージ用に超特大サイズに変更 */
             font-weight: bold;
-            margin-top: 1vw;
+            margin-top: 0.5vw;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 2.3vw; 
+            font-size: 2.8vw; 
             font-weight: bold;
             margin-top: 1vw;
         }
 
+        /* スマホ等で見た場合の見やすさも一応維持 */
         @media (max-width: 1000px) {
             .main-container {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            .table-section {
+                width: 100%;
             }
             .chart-section {
-                width: 90vw;
+                width: 80vw;
+                height: 80vw;
             }
+            .text-line1 { font-size: 4vw; }
+            .text-line2 { font-size: 12vw; }
+            .text-line3 { font-size: 5vw; }
         }
 
-        .status-message { margin-top: 2vw; font-size: 1.5vw; color: #777; font-weight: bold; }
+        .status-message { margin-top: 2vw; font-size: 2vw; color: #777; font-weight: bold; }
         .error-msg { color: #d32f2f; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="title-with-logo" style="display: flex; align-items: center; margin-top: 0;">
+        <div class="title-with-logo">
             <img src="bg-logo.png" alt="KAS Logo">
             <div>
                 <h1>KAS Accident/Incident Information</h1>
@@ -205,41 +216,4 @@
                 const dataText = await response.text();
                 const data = parseCSV(dataText);
                 updateUI(data);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。</span>';
-            }
-        }
-
-        function updateUI(data) {
-            try {
-                const tableSection = document.getElementById('table-section');
-                tableSection.innerHTML = ''; 
-
-                function createTable(headers, rows) {
-                    const table = document.createElement('table');
-                    const thead = document.createElement('thead');
-                    const trHead = document.createElement('tr');
-                    headers.forEach(text => {
-                        const th = document.createElement('th');
-                        th.textContent = text;
-                        trHead.appendChild(th);
-                    });
-                    thead.appendChild(trHead);
-                    table.appendChild(thead);
-
-                    const tbody = document.createElement('tbody');
-                    rows.forEach(row => {
-                        const tr = document.createElement('tr');
-                        row.forEach(text => {
-                            const td = document.createElement('td');
-                            td.textContent = text;
-                            tr.appendChild(td);
-                        });
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(tbody);
-                    tableSection.appendChild(table);
-                }
-
-                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0
+            } catch
