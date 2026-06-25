@@ -13,7 +13,7 @@
             margin: 0;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 40px auto;
             background: #fff;
             padding: 30px;
@@ -25,6 +25,11 @@
             color: #2c3e50;
             margin-bottom: 30px;
         }
+        /* 横スクロールに対応させるための枠 */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -34,6 +39,7 @@
             padding: 12px 15px;
             border-bottom: 1px solid #e0e0e0;
             text-align: left;
+            white-space: nowrap; /* 文字の途中で不自然に改行されるのを防ぐ */
         }
         th {
             background-color: #4CAF50;
@@ -58,18 +64,23 @@
         
         <div id="loading" class="loading">データを読み込み中...</div>
         
-        <table id="data-table" style="display: none;">
-            <thead id="table-head"></thead>
-            <tbody id="table-body"></tbody>
-        </table>
+        <div class="table-container">
+            <table id="data-table" style="display: none;">
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // ご提示いただいたURLからデータを取得できるようにCSV形式に変換したURLです
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
 
+        // CSVデータをバラバラに分解して配列にする関数
         function parseCSV(text) {
-            const lines = text.split('\n');
+            const lines = text.split(/\r?\n/);
             return lines.map(line => {
+                if (!line) return [];
                 return line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
             });
         }
@@ -83,27 +94,30 @@
                 const dataText = await response.text();
                 const data = parseCSV(dataText);
 
-                if (data.length === 0 || (data[0].length === 1 && data[0][0] === "")) {
-                    document.getElementById('loading').innerText = 'データが空か、正しく読み込めませんでした。';
+                // 空っぽの行を除外する
+                const validData = data.filter(row => row.length > 0 && row.some(cell => cell !== ""));
+
+                if (validData.length === 0) {
+                    document.getElementById('loading').innerText = 'スプレッドシートが空か、データを読み込めませんでした。';
                     return;
                 }
 
                 const tableHead = document.getElementById('table-head');
                 const tableBody = document.getElementById('table-body');
 
+                // 1行目をヘッダー（見出し）として作成
                 const headerRow = document.createElement('tr');
-                data[0].forEach(headerText => {
+                validData[0].forEach(headerText => {
                     const th = document.createElement('th');
                     th.textContent = headerText;
                     headerRow.appendChild(th);
                 });
                 tableHead.appendChild(headerRow);
 
-                for (let i = 1; i < data.length; i++) {
-                    if (data[i].length === 1 && data[i][0] === "") continue;
-                    
+                // 2行目以降をデータとして作成
+                for (let i = 1; i < validData.length; i++) {
                     const row = document.createElement('tr');
-                    data[i].forEach(cellText => {
+                    validData[i].forEach(cellText => {
                         const td = document.createElement('td');
                         td.textContent = cellText;
                         row.appendChild(td);
@@ -111,6 +125,7 @@
                     tableBody.appendChild(row);
                 }
 
+                // 【修正箇所】正しく表示を切り替えるように直しました
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('data-table').style.display = 'table';
 
@@ -120,6 +135,7 @@
             }
         }
 
+        // ページが開かれたら自動で実行
         window.onload = loadSpreadsheetData;
     </script>
 </body>
