@@ -5,140 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KAS Accident/Incident Information</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-            background-color: #111111; color: #ffffff;
-            height: 100vh; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 30px; overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 20px;
+            margin: 0;
         }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #333; padding-bottom: 15px; }
-        h1 { font-size: 2.8rem; letter-spacing: 2px; }
-        #clock { font-size: 2.5rem; font-family: monospace; color: #aaaaaa; }
-        
         .container {
-            display: flex; gap: 30px; flex: 1; margin-top: 25px;
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .airport-section {
-            flex: 1; display: flex; flex-direction: column; gap: 20px;
-            background: #151515; padding: 20px; border-radius: 20px; border: 1px solid #222;
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
         }
-        .airport-title {
-            font-size: 3rem; font-weight: 900; text-align: center; 
-            padding: 10px; background: #222; border-radius: 10px; letter-spacing: 4px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        
-        .card {
-            flex: 1; background: #1e1e1e; border-radius: 15px; padding: 20px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); border: 2px solid #333;
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
         }
-        .card-title { font-size: 2rem; font-weight: bold; margin-bottom: 10px; color: #cccccc; }
-        .number-display { font-size: 8rem; font-weight: 900; font-family: 'Impact', sans-serif; line-height: 1; }
-        .unit { font-size: 2.5rem; font-weight: bold; margin-left: 8px; color: #ffffff; }
-        
-        .safe { color: #00ff66; text-shadow: 0 0 25px rgba(0, 255, 102, 0.3); }
-        .warning { color: #ff3333; text-shadow: 0 0 25px rgba(255, 51, 51, 0.3); }
-        .count-up { color: #00ccff; text-shadow: 0 0 25px rgba(0, 204, 255, 0.3); }
-        
-        footer { text-align: center; font-size: 1.3rem; color: #666666; margin-top: 15px; }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+            padding: 40px 0;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>KAS 安全衛生管理状況 (当月累計・連続無事故日数)</h1>
-        <div id="clock">0000/00/00 00:00:00</div>
-    </header>
-
     <div class="container">
-        <div class="airport-section" style="border-top: 8px solid #00ccff;">
-            <div class="airport-title" style="color: #00ccff;">KIX</div>
-            <div class="card">
-                <div class="card-title">当月累計</div>
-                <div>
-                    <span id="kix-incident" class="number-display safe">-</span>
-                    <span class="unit">件</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">連続無事故日数</div>
-                <div>
-                    <span id="kix-days" class="number-display count-up">-</span>
-                    <span class="unit">日</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="airport-section" style="border-top: 8px solid #ff9900;">
-            <div class="airport-title" style="color: #ff9900;">HND</div>
-            <div class="card">
-                <div class="card-title">当月累計</div>
-                <div>
-                    <span id="hnd-incident" class="number-display safe">-</span>
-                    <span class="unit">件</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">連続無事故日数</div>
-                <div>
-                    <span id="hnd-days" class="number-display count-up">-</span>
-                    <span class="unit">日</span>
-                </div>
-            </div>
-        </div>
+        <h1>KAS Accident/Incident Information</h1>
+        
+        <div id="loading" class="loading">データを読み込み中...</div>
+        
+        <table id="data-table" style="display: none;">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+        </table>
     </div>
 
-    <footer>今日も一日、安全第一でがんばりましょう。</footer>
-
     <script>
-        // 正しいCSV形式のデータ取得用URLに修正しました
-        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?gid=0&single=true&output=csv';
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
 
-        async function fetchSpreadsheetData() {
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            return lines.map(line => {
+                return line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
+            });
+        }
+
+        async function loadSpreadsheetData() {
             try {
-                const response = await fetch(url);
-                const csvText = await response.text();
-                
-                // カンマや改行で綺麗にバラして読み込み
-                const rows = csvText.replace(/\r/g, '').split('\n');
-                if (rows.length >= 2) {
-                    const dataRow = rows[1].split(',');
-                    
-                    const kixIncident = parseInt(dataRow[0].trim()) || 0;
-                    const kixDays     = parseInt(dataRow[1].trim()) || 0;
-                    const hndIncident = parseInt(dataRow[2].trim()) || 0;
-                    const hndDays     = parseInt(dataRow[3].trim()) || 0;
-
-                    // --- KIXの表示反映 ---
-                    const kixIncidentEl = document.getElementById('kix-incident');
-                    kixIncidentEl.textContent = kixIncident;
-                    kixIncidentEl.className = kixIncident > 0 ? 'number-display warning' : 'number-display safe';
-                    document.getElementById('kix-days').textContent = kixDays;
-
-                    // --- HNDの表示反映 ---
-                    const hndIncidentEl = document.getElementById('hnd-incident');
-                    hndIncidentEl.textContent = hndIncident;
-                    hndIncidentEl.className = hndIncident > 0 ? 'number-display warning' : 'number-display safe';
-                    document.getElementById('hnd-days').textContent = hndDays;
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error('データの取得に失敗しました。');
                 }
+                const dataText = await response.text();
+                const data = parseCSV(dataText);
+
+                if (data.length === 0 || (data[0].length === 1 && data[0][0] === "")) {
+                    document.getElementById('loading').innerText = 'データが空か、正しく読み込めませんでした。';
+                    return;
+                }
+
+                const tableHead = document.getElementById('table-head');
+                const tableBody = document.getElementById('table-body');
+
+                const headerRow = document.createElement('tr');
+                data[0].forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
+                });
+                tableHead.appendChild(headerRow);
+
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i].length === 1 && data[i][0] === "") continue;
+                    
+                    const row = document.createElement('tr');
+                    data[i].forEach(cellText => {
+                        const td = document.createElement('td');
+                        td.textContent = cellText;
+                        row.appendChild(td);
+                    });
+                    tableBody.appendChild(row);
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('data-table').style.display = 'table';
+
             } catch (error) {
-                console.error('データの取得に失敗しました:', error);
+                console.error(error);
+                document.getElementById('loading').innerText = 'エラーが発生しました: ' + error.message;
             }
         }
 
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').textContent = 
-                `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ` +
-                `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-        }
-
-        updateClock();
-        setInterval(updateClock, 1000);
-
-        fetchSpreadsheetData();
-        setInterval(fetchSpreadsheetData, 30000); // 30秒ごとに更新
+        window.onload = loadSpreadsheetData;
     </script>
 </body>
 </html>
