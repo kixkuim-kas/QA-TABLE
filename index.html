@@ -109,31 +109,35 @@
             height: 100% !important;
         }
 
-        /* グラフ中央のテキスト */
+        /* ＝＝＝ グラフ中央のテキスト（ここを見やすく修正しました！） ＝＝＝ */
         .chart-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            width: 70%;
+            width: 90%; /* 文字が大きくなるので枠を広げました */
+            /* 背景ロゴと同化しないよう、白いフチドリ（影）をつけてくっきりさせます */
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 1), -2px -2px 4px rgba(255, 255, 255, 1);
         }
         .text-line1 {
             color: #d32f2f;
-            font-size: 1.1em;
+            font-size: 1.5em; /* 1.1em から大幅に拡大 */
             font-weight: bold;
+            line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 2.5em;
+            font-size: 3.5em; /* 2.5em からさらにドンと拡大 */
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 8px;
+            line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 1.2em;
+            font-size: 1.8em; /* 1.2em から拡大 */
             font-weight: bold;
-            margin-top: -5px;
+            margin-top: 10px;
         }
 
         .status-message { margin-top: 20px; font-size: 1.2em; color: #777; }
@@ -164,7 +168,7 @@
                 <canvas id="doughnutChart"></canvas>
                 <div class="chart-text">
                     <div class="text-line1">制限区域内<br>無事故日数目標</div>
-                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.5em;">以上</span></div>
+                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.4em; vertical-align: middle;">以上</span></div>
                     <div class="text-line3"><span id="current-days-display">...</span>日 継続中！</div>
                 </div>
             </div>
@@ -176,13 +180,11 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
 
-        // CSVデータを扱いやすい形に分解する関数
         function parseCSV(text) {
             const lines = text.split(/\r?\n/);
             return lines.map(line => line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1')));
         }
 
-        // スプレッドシートのデータを取得する処理
         async function loadData() {
             try {
                 const response = await fetch(csvUrl);
@@ -190,35 +192,30 @@
                 const dataText = await response.text();
                 const data = parseCSV(dataText);
                 
-                updateUI(data); // 取得したデータを画面を作る関数に渡す
+                updateUI(data);
             } catch (error) {
                 console.error(error);
-                updateUI([]); // エラー時は空っぽのデータを渡してデフォルト表示にする
+                updateUI([]);
             }
         }
 
         function updateUI(data) {
-            /* ＝＝＝ スプレッドシートから目標日数と現在日数を取得 ＝＝＝ */
-            // プログラムでは1行目を「0」と数えるため、20行目は「19」、21行目は「20」になります。B列は「1」です。
-            let goalDays = 101;     // 読み込み失敗時のデフォルト値
-            let currentDays = 58;   // 読み込み失敗時のデフォルト値
+            /* スプレッドシート B20, B21 から日数を取得 */
+            let goalDays = 101;
+            let currentDays = 58;
 
-            // スプレッドシートのデータがちゃんとB21セルまで存在するかチェック
             if (data && data.length > 20 && data[19].length > 1 && data[20].length > 1) {
-                const b20Value = parseInt(data[19][1], 10); // B20（目標日数）を取得
-                const b21Value = parseInt(data[20][1], 10); // B21（現在日数）を取得
+                const b20Value = parseInt(data[19][1], 10);
+                const b21Value = parseInt(data[20][1], 10);
 
-                // 数字として正しく読み込めていれば上書きする
                 if (!isNaN(b20Value)) goalDays = b20Value;
                 if (!isNaN(b21Value)) currentDays = b21Value;
             }
 
-            // 画面の数字をスプレッドシートの値に書き換える
             document.getElementById('goal-days-display').textContent = goalDays;
             document.getElementById('current-days-display').textContent = currentDays;
 
-
-            /* ＝＝＝ 左側の表の生成（現状は固定のデザインを維持） ＝＝＝ */
+            /* 左側の表の生成 */
             const tableHead = document.getElementById('table-head');
             const tableBody = document.getElementById('table-body');
             
@@ -278,8 +275,7 @@
                 subTablesContainer.appendChild(table);
             });
 
-            /* ＝＝＝ グラフの描画 ＝＝＝ */
-            // 現在日数が目標を超えた場合（マイナスになる場合）にグラフがおかしくならないよう調整
+            /* グラフの描画 */
             const remainingDays = Math.max(0, goalDays - currentDays); 
 
             const ctx = document.getElementById('doughnutChart').getContext('2d');
@@ -287,7 +283,7 @@
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: [currentDays, remainingDays], // [水色の部分, グレーの部分]
+                        data: [currentDays, remainingDays],
                         backgroundColor: ['#00bfff', '#e0e0e0'], 
                         borderWidth: 0,
                     }]
@@ -304,7 +300,6 @@
             document.getElementById('main-container').style.display = 'flex';
         }
 
-        // ページが開かれたら処理をスタート
         window.onload = loadData;
     </script>
 </body>
