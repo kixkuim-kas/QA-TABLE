@@ -32,17 +32,15 @@
             line-height: 1.2;
         }
 
-        /* ★左（表）を少し広く、右（グラフ）を少し狭くバランス調整しました */
         .main-container {
             width: 100%;
             max-width: 1400px;
             display: grid;
-            grid-template-columns: 1.1fr 1fr; /* 変更箇所：表の幅を広げました */
+            grid-template-columns: 1.1fr 1fr;
             gap: 50px; 
             align-items: center;
         }
 
-        /* 左側：表エリア */
         .table-section {
             min-width: 0; 
             overflow-x: auto; 
@@ -72,11 +70,10 @@
         th:first-child { text-align: left; }
         th:not(:first-child), td:not(:first-child) { text-align: center; }
 
-        /* 右側：グラフエリア */
         .chart-section {
             min-width: 0;
             width: 100%;
-            max-width: 600px; /* グラフの最大サイズを少し抑えました */
+            max-width: 600px; 
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
@@ -90,11 +87,11 @@
         }
 
         .chart-container {
-            /* ★ご要望通り、グラフの枠を10%小さく（90%に）設定しました */
             width: 90%; 
             height: 90%;
             position: relative;
-            background-color: rgba(255, 255, 255, 0.7); 
+            /* ★変更箇所：白いフィルターを 0.7(70%) から 0.35(35%) に薄くして、ロゴを鮮やかにしました */
+            background-color: rgba(255, 255, 255, 0.35); 
             border-radius: 50%;
             padding: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
@@ -105,7 +102,6 @@
             height: 100% !important;
         }
 
-        /* グラフ中央のテキスト */
         .chart-text {
             position: absolute;
             top: 50%;
@@ -113,24 +109,29 @@
             transform: translate(-50%, -50%);
             text-align: center;
             width: 95%;
-            text-shadow: 2px 2px 5px rgba(255, 255, 255, 1), -2px -2px 5px rgba(255, 255, 255, 1);
+            /* ★変更箇所：ロゴが目立つ分、文字が埋もれないように白い光（フチドリ）を強力にしました */
+            text-shadow: 
+                0 0 15px rgba(255, 255, 255, 1),
+                0 0 30px rgba(255, 255, 255, 0.9),
+                2px 2px 5px rgba(255, 255, 255, 1), 
+                -2px -2px 5px rgba(255, 255, 255, 1);
         }
         .text-line1 {
             color: #d32f2f;
-            font-size: 1.8em; /* 円が小さくなった分、文字も少しだけ調整 */
+            font-size: 1.8em; 
             font-weight: bold;
             line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 5em; /* 円が小さくなった分、文字も少しだけ調整 */
+            font-size: 5em; 
             font-weight: bold;
             margin-top: 10px;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 2.3em; /* 円が小さくなった分、文字も少しだけ調整 */
+            font-size: 2.3em; 
             font-weight: bold;
             margin-top: 12px;
         }
