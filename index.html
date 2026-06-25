@@ -89,24 +89,23 @@
             justify-content: center;
             align-items: center;
             
-            /* ======== 変更箇所 ======== */
-            /* 図形を消して、代わりに背景ロゴ（bg-logo.png）を表示します */
-            background-image: url('bg-logo.png');
+            /* ======== ピンクと水色のロゴ（logo.png）を背景に設定 ======== */
+            background-image: url('logo.png');
             background-repeat: no-repeat;
             background-position: center center;
-            /* 画像が枠内にちょうど収まるようにサイズを調整 */
-            background-size: 90%; 
+            /* ロゴが大きすぎないようにサイズを調整（80%） */
+            background-size: 80%; 
         }
 
         .chart-container {
             width: 85%;
             aspect-ratio: 1 / 1;
             position: relative;
-            /* グラフと文字が背景ロゴと同化しないように、白い丸の座布団を敷きます */
-            background-color: rgba(255, 255, 255, 0.85); /* 少しだけ透ける白 */
+            /* グラフと文字が背景ロゴと同化して読みにくくならないよう、白い半透明の丸を敷きます */
+            background-color: rgba(255, 255, 255, 0.9); 
             border-radius: 50%;
             padding: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* 軽く影をつける */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
         canvas {
             width: 100% !important;
@@ -182,7 +181,6 @@
 
         async function loadData() {
             try {
-                // スプレッドシートからのデータ取得処理
                 updateUI();
             } catch (error) {
                 console.error(error);
@@ -191,7 +189,7 @@
         }
 
         function updateUI() {
-            /* ＝＝＝ 1番目のデータ（KPI）の生成 ＝＝＝ */
+            /* 1番目のデータ（KPI）の生成 */
             const tableHead = document.getElementById('table-head');
             const tableBody = document.getElementById('table-body');
             
@@ -217,3 +215,68 @@
                 row.forEach(cell => {
                     const td = document.createElement('td');
                     td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+
+            /* 2番目のデータ（追加分）の生成 */
+            const subTablesContainer = document.getElementById('sub-tables');
+            const additionalData = [
+                { title: '制限区域内無事故日数目標', label: '全空港(KIX/HND/UKB)', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'KIX', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'HND', goal: '101', current: '3' },
+                { title: '無事故連続日数', label: 'UKB', goal: '101', current: '3' }
+            ];
+
+            additionalData.forEach(data => {
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">${data.title}</th>
+                            <th style="width: 25%;">目標（日数）</th>
+                            <th style="width: 25%;">現在（件数）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${data.label}</td>
+                            <td>${data.goal}</td>
+                            <td>${data.current}</td>
+                        </tr>
+                    </tbody>
+                `;
+                subTablesContainer.appendChild(table);
+            });
+
+            /* グラフの描画 */
+            const currentDays = 58;
+            const goalDays = 101;
+            
+            const ctx = document.getElementById('doughnutChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [currentDays, goalDays - currentDays],
+                        backgroundColor: ['#00bfff', '#e0e0e0'], 
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    cutout: '85%',
+                    plugins: { tooltip: { enabled: false } },
+                    maintainAspectRatio: true,
+                    responsive: true,
+                }
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('main-container').style.display = 'flex';
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
