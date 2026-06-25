@@ -15,12 +15,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden; /* 横スクロールを防止 */
+            overflow-x: hidden; 
         }
 
         .header {
             width: 98%;
-            max-width: 1800px; /* 大画面にも対応 */
+            max-width: none; /* 大画面用に最大幅の制限を解除 */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -28,16 +28,29 @@
         }
         .header h1 {
             color: #002f6c;
-            font-size: 2.5em;
+            /* 画面幅に合わせてタイトルも自動で巨大化します */
+            font-size: clamp(2.5em, 3.5vw, 6em);
             margin: 0;
             line-height: 1.2;
         }
+        .sub-title {
+            color: #002f6c;
+            /* サブタイトルも画面幅に合わせて拡大 */
+            font-size: clamp(1.5em, 2vw, 4em);
+            font-weight: bold;
+            margin: 0;
+        }
+        .header img {
+            /* ロゴマークも画面幅に合わせて拡大 */
+            height: clamp(40px, 4vw, 80px);
+            margin-right: 15px;
+        }
 
         .main-container {
-            width: 98%; /* 画面幅いっぱいまで使う */
-            max-width: 1800px;
+            width: 98%; 
+            max-width: none; /* 大画面用に最大幅の制限を解除 */
             display: grid;
-            grid-template-columns: 1fr 1.3fr; /* グラフ側(右)を大幅に広く確保 */
+            grid-template-columns: 1fr 1.3fr; 
             gap: 40px; 
             align-items: center;
         }
@@ -50,13 +63,15 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 1.05em; 
+            /* 表の文字も大画面では自動的に大きく見やすくなります */
+            font-size: clamp(1.05em, 1.3vw, 2.5em); 
             margin-bottom: 30px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
             text-align: left;
-            padding: 14px 15px;
+            /* 表の余白も画面に合わせて自動調整 */
+            padding: clamp(14px, 1.2vw, 28px) 15px;
             border-bottom: 1px solid #e0e0e0;
             white-space: nowrap;
         }
@@ -75,8 +90,8 @@
         .chart-section {
             min-width: 0;
             width: 100%;
-            /* ★画面の高さ(vh)に合わせて限界まで自動拡大する魔法の設定 */
-            max-width: min(1000px, 80vh); 
+            /* 1000pxの制限を外し、モニターの高さの85%まで無限に巨大化するように変更 */
+            max-width: 85vh; 
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             position: relative;
@@ -86,19 +101,18 @@
             
             background-image: url('bg-logo.png');
             background-repeat: no-repeat;
-            background-position: left center; /* 左寄せ */
-            background-size: 150%; /* 背景ロゴも特大化して画面いっぱいに */
+            background-position: left center; 
+            background-size: 150%; 
             
-            /* ★グラフの拡大に合わせて文字も自動拡大させる最新機能 */
             container-type: inline-size; 
         }
 
         .chart-container {
-            width: 95%; /* 枠いっぱいまで円を広げる */
+            width: 95%; 
             height: 95%;
             position: relative;
             background-color: rgba(255, 255, 255, 0.65); 
-            backdrop-filter: blur(3px); /* 磨りガラス効果で文字を読みやすく */
+            backdrop-filter: blur(3px); 
             border-radius: 50%;
             padding: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
@@ -118,7 +132,6 @@
             text-align: center;
             width: 95%;
             
-            /* ★白い発光（フチドリ）を最強にして、どんな背景でも読めるように */
             text-shadow: 
                 0 0 15px rgba(255, 255, 255, 1),
                 0 0 30px rgba(255, 255, 255, 1),
@@ -126,23 +139,23 @@
                 -2px -2px 5px rgba(255, 255, 255, 1);
         }
         
-        /* フォントサイズを「cqi（グラフの横幅に対する割合）」にすることで、グラフの巨大化に完全連動します */
+        /* ★グラフ内の文字比率を大幅に引き上げました（限界まで拡大） */
         .text-line1 {
             color: #d32f2f;
-            font-size: 4.5cqi; 
+            font-size: 6cqi; /* 4.5 -> 6 に拡大 */
             font-weight: bold;
             line-height: 1.2;
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 13cqi; /* 特大サイズに連動 */
+            font-size: 17cqi; /* 13 -> 17 に特大化！ */
             font-weight: bold;
-            margin-top: 2cqi;
+            margin-top: 1cqi;
             line-height: 1;
         }
         .text-line3 {
             color: #00bfff;
-            font-size: 6cqi; 
+            font-size: 7.5cqi; /* 6 -> 7.5 に拡大 */
             font-weight: bold;
             margin-top: 3cqi;
         }
@@ -165,8 +178,8 @@
     <div class="header">
         <h1>KAS Accident/Incident Information</h1>
         <div class="title-with-logo" style="display: flex; align-items: center; margin-top: 5px;">
-            <img src="bg-logo.png" alt="KAS Logo" style="height: 40px; margin-right: 15px;">
-            <div class="sub-title" style="color: #002f6c; font-size: 1.5em; font-weight: bold; margin: 0;">KANSAI AIRPORTS<br>Aviation Services</div>
+            <img src="bg-logo.png" alt="KAS Logo">
+            <div class="sub-title">KANSAI AIRPORTS<br>Aviation Services</div>
         </div>
     </div>
 
@@ -251,7 +264,6 @@
                     createTable(data[7].slice(0, 3), kpiRows);
                 }
 
-                /* B16・B17から数字を取得する処理 */
                 let goalDays = 105;
                 let currentDays = 100;
 
