@@ -6,7 +6,7 @@
     <title>KAS Accident/Incident Information</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* すべてのサイズを画面全体の横幅（vw）基準にすることで、古いブラウザでも絶対にフリーズせず、比率を維持して巨大化します */
+        /* すべてのサイズを画面全体の横幅（vw）基準にして比率を維持します */
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
             background-color: #ffffff;
@@ -23,7 +23,7 @@
         }
         .header h1 {
             color: #002f6c;
-            font-size: 3.5vw; /* タイトルを大画面用に大きく */
+            font-size: 3.5vw; 
             margin: 0;
             line-height: 1.2;
         }
@@ -39,14 +39,12 @@
             margin-right: 1.5vw;
             float: left;
         }
-        /* ロゴとタイトルの横並び崩れ防止 */
         .title-with-logo::after {
             content: "";
             display: block;
             clear: both;
         }
 
-        /* フリーズの原因となるGridを廃止し、最も確実で軽量なFlexboxに変更 */
         .main-container {
             width: 100%; 
             display: flex;
@@ -54,7 +52,6 @@
             align-items: center;
         }
 
-        /* 左側：表エリア（全体の50%の幅に固定してはみ出しを防止） */
         .table-section {
             width: 50%;
             min-width: 0;
@@ -64,13 +61,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 1.2vw; /* サイネージ向けに表の文字を大きく */
+            font-size: 1.2vw; 
             margin-bottom: 2.5vw; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         th, td {
             text-align: left;
-            padding: 1.2vw 1.5vw; /* 線の隙間を広げて遠くからでも見やすく */
+            padding: 1.2vw 1.5vw; 
             border-bottom: 1px solid #e0e0e0;
             white-space: nowrap;
         }
@@ -85,9 +82,8 @@
         th:first-child { text-align: left; }
         th:not(:first-child), td:not(:first-child) { text-align: center; }
 
-        /* 右側：グラフエリア（vwで縦横のサイズを完全に固定し、画面外への切切れを防ぎます） */
         .chart-section {
-            width: 42vw;       /* 画面幅の42%の正方形に完全固定 */
+            width: 42vw;       
             height: 42vw;      
             position: relative;
             display: flex;
@@ -113,7 +109,6 @@
             height: 100% !important;
         }
 
-        /* グラフ中央のテキスト */
         .chart-text {
             position: absolute;
             top: 50%;
@@ -129,7 +124,6 @@
                 -0.2vw -0.2vw 0.5vw rgba(255, 255, 255, 1);
         }
         
-        /* エラーの原因となったcqi単位を廃止し、確実・強力に拡大するvw単位に統一 */
         .text-line1 {
             color: #d32f2f;
             font-size: 2.2vw; 
@@ -138,7 +132,7 @@
         }
         .text-line2 {
             color: #002f6c;
-            font-size: 6.5vw; /* 数字をサイネージ用に超特大サイズに変更 */
+            font-size: 6.5vw; 
             font-weight: bold;
             margin-top: 0.5vw;
             line-height: 1;
@@ -150,7 +144,6 @@
             margin-top: 1vw;
         }
 
-        /* スマホ等で見た場合の見やすさも一応維持 */
         @media (max-width: 1000px) {
             .main-container {
                 flex-direction: column;
@@ -216,4 +209,101 @@
                 const dataText = await response.text();
                 const data = parseCSV(dataText);
                 updateUI(data);
-            } catch
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。URLや共有設定を確認してください。</span>';
+            }
+        }
+
+        function updateUI(data) {
+            try {
+                const tableSection = document.getElementById('table-section');
+                tableSection.innerHTML = ''; 
+
+                function createTable(headers, rows) {
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const trHead = document.createElement('tr');
+                    headers.forEach(text => {
+                        const th = document.createElement('th');
+                        th.textContent = text;
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    rows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(text => {
+                            const td = document.createElement('td');
+                            td.textContent = text;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+                    tableSection.appendChild(table);
+                }
+
+                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
+                if (data[4] && data[5]) createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
+                if (data[7]) {
+                    const kpiRows = [];
+                    for (let i = 8; i < data.length; i++) {
+                        if (!data[i] || data[i][0] === "") break; 
+                        kpiRows.push(data[i].slice(0, 3));
+                    }
+                    createTable(data[7].slice(0, 3), kpiRows);
+                }
+
+                let goalDays = 105;
+                let currentDays = 100;
+
+                if (data.length > 15 && data[15] && data[15].length > 1) {
+                    const b16Value = parseInt(data[15][1], 10);
+                    if (!isNaN(b16Value)) goalDays = b16Value;
+                }
+                if (data.length > 16 && data[16] && data[16].length > 1) {
+                    const b17Value = parseInt(data[16][1], 10);
+                    if (!isNaN(b17Value)) currentDays = b17Value;
+                }
+
+                document.getElementById('goal-days-display').textContent = goalDays;
+                document.getElementById('current-days-display').textContent = currentDays;
+
+                const remainingDays = Math.max(0, goalDays - currentDays); 
+
+                if (myChart) myChart.destroy(); 
+                const ctx = document.getElementById('doughnutChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [currentDays, remainingDays],
+                            backgroundColor: ['#00bfff', '#e0e0e0'], 
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        cutout: '85%',
+                        plugins: { tooltip: { enabled: false } },
+                        maintainAspectRatio: true,
+                        responsive: true,
+                    }
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-container').style.display = 'flex';
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。</span>';
+            }
+        }
+
+        // ページが開かれたら「画像を待たずに」即座にデータを取得開始する
+        loadData();
+    </script>
+</body>
+</html>
