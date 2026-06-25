@@ -6,187 +6,91 @@
     <title>KAS Accident/Incident Information</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* すべてのサイズを画面全体の横幅（vw）基準にして比率を維持します */
         body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #ffffff;
-            color: #333;
             margin: 0;
-            padding: 2vw; 
+            padding: 1vw;
+            height: 100vh; /* 画面の高さを基準にする */
             box-sizing: border-box;
-            overflow-x: hidden;
+            overflow: hidden; /* 画面からはみ出した分は隠して強制的に収める */
         }
 
         .header {
-            width: 100%;
-            margin-bottom: 2vw;
+            height: 10vh; /* ヘッダーを高さの10%に固定 */
+            display: flex;
+            align-items: center;
+            margin-bottom: 1vh;
         }
-        .header h1 {
-            color: #002f6c;
-            font-size: 3.5vw; 
-            margin: 0;
-            line-height: 1.2;
-        }
-        .sub-title {
-            color: #002f6c;
-            font-size: 1.8vw; 
-            font-weight: bold;
-            margin: 0;
-            line-height: 1.2;
-        }
-        .header img {
-            height: 4.5vw; 
-            margin-right: 1.5vw;
-            float: left;
-        }
-        .title-with-logo::after {
-            content: "";
-            display: block;
-            clear: both;
-        }
+        .header img { height: 8vh; margin-right: 1vw; }
+        .header h1 { font-size: 3vh; color: #002f6c; margin: 0; }
 
+        /* メインエリア：画面の残り90%の高さに収める */
         .main-container {
-            width: 100%; 
+            height: 88vh; 
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 2vw;
         }
 
         .table-section {
-            width: 50%;
-            min-width: 0;
-            overflow-x: auto; 
+            width: 55%;
+            height: 100%;
+            overflow-y: auto; /* 表が長い場合はここだけスクロール */
         }
         
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 1.2vw; 
-            margin-bottom: 2.5vw; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        th, td {
-            text-align: left;
-            padding: 1.2vw 1.5vw; 
-            border-bottom: 1px solid #e0e0e0;
-            white-space: nowrap;
-        }
-        th {
-            background-color: #002f6c;
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) td {
-            background-color: #f2f2f2;
-        }
-        th:first-child { text-align: left; }
-        th:not(:first-child), td:not(:first-child) { text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 1.8vh; }
+        th, td { padding: 1vh; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #002f6c; color: white; }
 
+        /* グラフエリア：横幅を確保しつつ、縦幅を画面内に制限 */
         .chart-section {
-            width: 42vw;       
-            height: 42vw;      
-            position: relative;
+            width: 40%;
+            height: 80vh; /* 画面縦幅の80%を上限にする */
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            background-image: url('bg-logo.png');
-            background-repeat: no-repeat;
-            background-position: left center; 
-            background-size: 140%; 
+            position: relative;
         }
 
         .chart-container {
-            width: 100%; 
-            height: 100%;
+            width: 100%;
+            max-width: 80vh; /* 正方形を保つため高さに合わせる */
+            aspect-ratio: 1 / 1;
             position: relative;
-            background-color: rgba(255, 255, 255, 0.65); 
-            border-radius: 50%;
-            box-sizing: border-box;
-        }
-        canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .chart-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            width: 95%;
-            
-            text-shadow: 
-                0 0 1vw rgba(255, 255, 255, 1),
-                0 0 2vw rgba(255, 255, 255, 1),
-                0.2vw 0.2vw 0.5vw rgba(255, 255, 255, 1), 
-                -0.2vw -0.2vw 0.5vw rgba(255, 255, 255, 1);
         }
         
-        .text-line1 {
-            color: #d32f2f;
-            font-size: 2.2vw; 
-            font-weight: bold;
-            line-height: 1.3;
+        .chart-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
         }
-        .text-line2 {
-            color: #002f6c;
-            font-size: 6.5vw; 
-            font-weight: bold;
-            margin-top: 0.5vw;
-            line-height: 1;
-        }
-        .text-line3 {
-            color: #00bfff;
-            font-size: 2.8vw; 
-            font-weight: bold;
-            margin-top: 1vw;
-        }
-
-        @media (max-width: 1000px) {
-            .main-container {
-                flex-direction: column;
-            }
-            .table-section {
-                width: 100%;
-            }
-            .chart-section {
-                width: 80vw;
-                height: 80vw;
-            }
-            .text-line1 { font-size: 4vw; }
-            .text-line2 { font-size: 12vw; }
-            .text-line3 { font-size: 5vw; }
-        }
-
-        .status-message { margin-top: 2vw; font-size: 2vw; color: #777; font-weight: bold; }
-        .error-msg { color: #d32f2f; }
+        
+        .text-line1 { font-size: 2.5vh; color: #d32f2f; font-weight: bold; }
+        .text-line2 { font-size: 8vh; color: #002f6c; font-weight: bold; line-height: 1; }
+        .text-line3 { font-size: 3vh; color: #00bfff; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="title-with-logo">
-            <img src="bg-logo.png" alt="KAS Logo">
-            <div>
-                <h1>KAS Accident/Incident Information</h1>
-                <div class="sub-title">KANSAI AIRPORTS Aviation Services</div>
-            </div>
-        </div>
+        <img src="bg-logo.png" alt="Logo">
+        <h1>KAS Accident/Incident Information</h1>
     </div>
 
-    <div id="loading" class="status-message">データを読み込み中...</div>
+    <div id="loading" style="font-size: 3vh; padding: 10vh;">読み込み中...</div>
 
     <div class="main-container" id="main-container" style="display: none;">
         <div class="table-section" id="table-section"></div>
-        
         <div class="chart-section">
             <div class="chart-container">
                 <canvas id="doughnutChart"></canvas>
                 <div class="chart-text">
-                    <div class="text-line1">制限区域内<br>無事故日数目標</div>
-                    <div class="text-line2"><span id="goal-days-display">...</span>日 <span style="font-size: 0.3em; vertical-align: middle;">以上</span></div>
+                    <div class="text-line1">制限区域内 無事故日数目標</div>
+                    <div class="text-line2"><span id="goal-days-display">...</span>日</div>
                     <div class="text-line3"><span id="current-days-display">...</span>日 継続中！</div>
                 </div>
             </div>
@@ -197,112 +101,41 @@
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRju7RHJ7_5PMGhXmQhcnCs5S6YiAwLY-mVASp8wbhF7l0oCj2PyRN51IAOdoJQGboNAOZiIhNI4mKh/pub?output=csv';
         let myChart = null;
 
-        function parseCSV(text) {
-            const lines = text.split(/\r?\n/);
-            return lines.map(line => line.split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1')));
-        }
-
         async function loadData() {
             try {
                 const response = await fetch(csvUrl + '&t=' + new Date().getTime());
-                if (!response.ok) throw new Error('ネットワークエラー');
-                const dataText = await response.text();
-                const data = parseCSV(dataText);
-                updateUI(data);
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの取得に失敗しました。URLや共有設定を確認してください。</span>';
-            }
-        }
-
-        function updateUI(data) {
-            try {
+                const text = await response.text();
+                const data = text.split(/\r?\n/).map(line => line.split(',').map(c => c.trim().replace(/^"(.*)"$/, '$1')));
+                
+                // 表生成
                 const tableSection = document.getElementById('table-section');
-                tableSection.innerHTML = ''; 
+                const createTable = (h, r) => {
+                    const t = document.createElement('table');
+                    t.innerHTML = `<thead><tr>${h.map(i=>`<th>${i}</th>`).join('')}</tr></thead><tbody>${r.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+                    tableSection.appendChild(t);
+                };
+                if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
+                if(data[4]) createTable(data[4].slice(0,4), [data[5].slice(0,4)]);
+                if(data[7]) createTable(data[7].slice(0,3), data.slice(8).filter(r=>r[0]).map(r=>r.slice(0,3)));
 
-                function createTable(headers, rows) {
-                    const table = document.createElement('table');
-                    const thead = document.createElement('thead');
-                    const trHead = document.createElement('tr');
-                    headers.forEach(text => {
-                        const th = document.createElement('th');
-                        th.textContent = text;
-                        trHead.appendChild(th);
-                    });
-                    thead.appendChild(trHead);
-                    table.appendChild(thead);
+                // 数字取得
+                const goal = parseInt(data[15][1]);
+                const cur = parseInt(data[16][1]);
+                document.getElementById('goal-days-display').textContent = goal;
+                document.getElementById('current-days-display').textContent = cur;
 
-                    const tbody = document.createElement('tbody');
-                    rows.forEach(row => {
-                        const tr = document.createElement('tr');
-                        row.forEach(text => {
-                            const td = document.createElement('td');
-                            td.textContent = text;
-                            tr.appendChild(td);
-                        });
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(tbody);
-                    tableSection.appendChild(table);
-                }
-
-                if (data[1] && data[2]) createTable(data[1].slice(0, 3), [data[2].slice(0, 3)]);
-                if (data[4] && data[5]) createTable(data[4].slice(0, 4), [data[5].slice(0, 4)]);
-                if (data[7]) {
-                    const kpiRows = [];
-                    for (let i = 8; i < data.length; i++) {
-                        if (!data[i] || data[i][0] === "") break; 
-                        kpiRows.push(data[i].slice(0, 3));
-                    }
-                    createTable(data[7].slice(0, 3), kpiRows);
-                }
-
-                let goalDays = 105;
-                let currentDays = 100;
-
-                if (data.length > 15 && data[15] && data[15].length > 1) {
-                    const b16Value = parseInt(data[15][1], 10);
-                    if (!isNaN(b16Value)) goalDays = b16Value;
-                }
-                if (data.length > 16 && data[16] && data[16].length > 1) {
-                    const b17Value = parseInt(data[16][1], 10);
-                    if (!isNaN(b17Value)) currentDays = b17Value;
-                }
-
-                document.getElementById('goal-days-display').textContent = goalDays;
-                document.getElementById('current-days-display').textContent = currentDays;
-
-                const remainingDays = Math.max(0, goalDays - currentDays); 
-
-                if (myChart) myChart.destroy(); 
+                // グラフ
                 const ctx = document.getElementById('doughnutChart').getContext('2d');
-                myChart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [currentDays, remainingDays],
-                            backgroundColor: ['#00bfff', '#e0e0e0'], 
-                            borderWidth: 0,
-                        }]
-                    },
-                    options: {
-                        cutout: '85%',
-                        plugins: { tooltip: { enabled: false } },
-                        maintainAspectRatio: true,
-                        responsive: true,
-                    }
+                    data: { datasets: [{ data: [cur, Math.max(0, goal-cur)], backgroundColor: ['#00bfff', '#eee'] }] },
+                    options: { cutout: '80%', plugins: { legend: { display: false } } }
                 });
 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('main-container').style.display = 'flex';
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = '<span class="error-msg">データの表示中にエラーが発生しました。</span>';
-            }
+            } catch(e) { document.getElementById('loading').textContent = 'エラーが発生しました'; }
         }
-
-        // ページが開かれたら「画像を待たずに」即座にデータを取得開始する
         loadData();
     </script>
 </body>
