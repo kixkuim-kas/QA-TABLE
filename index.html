@@ -17,7 +17,8 @@
         table { width: 100%; border-collapse: collapse; font-size: 1.6vh; margin-bottom: 2vh; }
         th, td { padding: 0.8vh; border-bottom: 1px solid #ddd; text-align: left; }
         th { background-color: #002f6c; color: white; }
-        .chart-section { width: 45%; height: 80vh; margin-top: -3vh; display: flex; justify-content: center; align-items: center; background-image: url('bg-logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.8; }
+        /* 背景画像指定を newlogo.jpg に変更 */
+        .chart-section { width: 45%; height: 80vh; margin-top: -3vh; display: flex; justify-content: center; align-items: center; background-image: url('newlogo.jpg'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.8; }
         .chart-container { width: 80%; aspect-ratio: 1 / 1; position: relative; background-color: rgba(255, 255, 255, 0.7); border-radius: 50%; }
         .chart-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
         .text-line1 { font-size: 2.2vh; color: #d32f2f; font-weight: bold; }
@@ -28,7 +29,7 @@
 <body>
 
     <div class="header">
-        <img src="bg-logo.png" alt="Logo">
+        <img src="newlogo.jpg" alt="Logo">
         <div class="header-text">
             <h1>KAS Accident/Incident Information</h1>
             <div class="company-name">KANSAI AIRPORTS<br>Aviation Services</div>
@@ -71,7 +72,6 @@
                 if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
                 if(data[4]) createTable(data[4].slice(0,4), [data[5].slice(0,4)]);
                 
-                // Safety KPIの表作成（A16, A17を除外）
                 if(data[7]) {
                     const kpiRows = data.slice(8).filter(r => 
                         r[0] && 
@@ -81,7 +81,6 @@
                     createTable(data[7].slice(0,3), kpiRows);
                 }
 
-                // 数字取得 (B16, B17)
                 const goal = parseInt(data[15][1]);
                 const cur = parseInt(data[16][1]);
                 document.getElementById('goal-days-display').textContent = goal;
