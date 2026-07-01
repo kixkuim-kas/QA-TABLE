@@ -72,9 +72,13 @@
                     t.innerHTML = `<thead><tr>${h.map(i=>`<th>${i}</th>`).join('')}</tr></thead><tbody>${r.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
                     tableSection.appendChild(t);
                 };
-                if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
-                if(data[4]) createTable(data[4].slice(0,4), [data[5].slice(0,4)]);
                 
+                // 1つ目のテーブル（制限区域内無事故日数目標）を表示
+                if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
+                
+                // 【変更点】元々ここにあった 2つ目のテーブル（A5:D6の「各空港」のテーブル）を生成するコードを削除しました。
+                
+                // 3つ目のテーブル（Safety KPI 安全成績指標）を表示
                 if(data[7]) {
                     const kpiRows = data.slice(8).filter(r => 
                         r[0] && 
