@@ -27,7 +27,7 @@
         .chart-section { width: 45%; height: 100%; display: flex; justify-content: center; align-items: center; background-image: url('newlogo.jpg'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.8; }
         .chart-container { width: 80%; aspect-ratio: 1 / 1; position: relative; background-color: rgba(255, 255, 255, 0.7); border-radius: 50%; }
         
-        /* 【変更】中央テキスト全体の配置と文字サイズ・余白の調整 */
+        /* 中央テキスト全体の配置調整 */
         .chart-text { 
             position: absolute; 
             top: 50%; 
@@ -40,12 +40,22 @@
             justify-content: center;
             align-items: center;
         }
-        /* 制限区域内 無事故日数目標（サイズアップ＋下に余白） */
+        /* 制限区域内 無事故日数目標 */
         .text-line1 { font-size: 3.0vh; color: #d32f2f; font-weight: bold; margin-bottom: 1.5vh; white-space: nowrap; } 
-        /* 〇〇日（サイズアップ＋行の詰まりを解消） */
-        .text-line2 { font-size: 9.5vh; color: #002f6c; font-weight: bold; line-height: 1.1; margin-bottom: 1.5vh; } 
-        /* 〇〇日 継続中！（サイズアップ） */
-        .text-line3 { font-size: 3.5vh; color: #00bfff; font-weight: bold; white-space: nowrap; }
+        /* 〇〇日 */
+        .text-line2 { font-size: 9.5vh; color: #002f6c; font-weight: bold; line-height: 1.1; margin-bottom: 2.0vh; } 
+        
+        /* 【変更】〇〇日 継続中！（サイズ20%アップ: 3.5vh -> 4.2vh、青背景に白文字の四角デザイン） */
+        .text-line3 { 
+            font-size: 4.2vh; 
+            color: #ffffff; 
+            background-color: #00bfff; 
+            font-weight: bold; 
+            white-space: nowrap; 
+            padding: 0.8vh 2.5vh; 
+            border-radius: 0.8vh; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
 
         /* 画像エリアのスタイル定義 */
         .image-section {
