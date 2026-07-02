@@ -16,7 +16,7 @@
         .header h1 { font-size: 3.2vh; color: #002f6c; margin: 0; }
         .company-name { font-size: 2vh; color: #002f6c; font-weight: bold; }
         
-        /* 【変更】画像を上に近づけるため、margin-bottomを 2vh から 0.5vh に縮小 */
+        /* 画像の高さを確保するため、メインコンテンツの高さを52vhに縮小 */
         .main-container { height: 52vh; display: flex; justify-content: space-between; align-items: flex-start; gap: 2vw; margin-bottom: 0.5vh; }
         .table-section { width: 50%; height: 100%; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 1.6vh; margin-bottom: 2vh; }
@@ -57,7 +57,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
 
-        /* 【変更】画像エリアの上部を少しマイナス方向に引っ張り、位置を上に上げました */
+        /* 画像エリアの上部を少しマイナス方向に引っ張り、位置を上に上げました */
         .image-section {
             height: 32vh; /* 高さを少し広げて画像を大きく表示できるように調整 */
             margin-top: -1.5vh; /* テーブルとチャートのエリアに少し近づける */
@@ -130,10 +130,12 @@
                 if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
                 
                 if(data[7]) {
+                    // 【修正】除外条件に「制限区域内内無事故日数目標」（スプレッドシートの表記ミス等も含めて部分一致で弾くよう）調整
                     const kpiRows = data.slice(8).filter(r => 
                         r[0] && 
-                        r[0] !== "制限区域内無事故事故日数目標" && 
-                        r[0] !== "継続日数"
+                        !r[0].includes("制限区域内無事故日数目標") && 
+                        !r[0].includes("制限区域内無事故事故日数目標") && 
+                        !r[0].includes("継続日数")
                     ).map(r => r.slice(0,3));
                     createTable(data[7].slice(0,3), kpiRows);
                 }
