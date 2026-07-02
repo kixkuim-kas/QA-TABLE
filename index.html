@@ -16,7 +16,7 @@
         .header h1 { font-size: 3.2vh; color: #002f6c; margin: 0; }
         .company-name { font-size: 2vh; color: #002f6c; font-weight: bold; }
         
-        /* 【変更】画像の高さを確保するため、メインコンテンツの高さを82vhから52vhに縮小 */
+        /* 画像の高さを確保するため、メインコンテンツの高さを52vhに縮小 */
         .main-container { height: 52vh; display: flex; justify-content: space-between; align-items: flex-start; gap: 2vw; margin-bottom: 2vh; }
         .table-section { width: 50%; height: 100%; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 1.6vh; margin-bottom: 2vh; }
@@ -27,12 +27,27 @@
         .chart-section { width: 45%; height: 100%; display: flex; justify-content: center; align-items: center; background-image: url('newlogo.jpg'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.8; }
         .chart-container { width: 80%; aspect-ratio: 1 / 1; position: relative; background-color: rgba(255, 255, 255, 0.7); border-radius: 50%; }
         
-        .chart-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
-        .text-line1 { font-size: 2.64vh; color: #d32f2f; font-weight: bold; }
-        .text-line2 { font-size: 8.4vh; color: #002f6c; font-weight: bold; line-height: 1; }
-        .text-line3 { font-size: 3.0vh; color: #00bfff; font-weight: bold; }
+        /* 【変更】中央テキスト全体の配置と文字サイズ・余白の調整 */
+        .chart-text { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            text-align: center; 
+            width: 90%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        /* 制限区域内 無事故日数目標（サイズアップ＋下に余白） */
+        .text-line1 { font-size: 3.0vh; color: #d32f2f; font-weight: bold; margin-bottom: 1.5vh; white-space: nowrap; } 
+        /* 〇〇日（サイズアップ＋行の詰まりを解消） */
+        .text-line2 { font-size: 9.5vh; color: #002f6c; font-weight: bold; line-height: 1.1; margin-bottom: 1.5vh; } 
+        /* 〇〇日 継続中！（サイズアップ） */
+        .text-line3 { font-size: 3.5vh; color: #00bfff; font-weight: bold; white-space: nowrap; }
 
-        /* 【新規】画像エリアのスタイル定義 */
+        /* 画像エリアのスタイル定義 */
         .image-section {
             height: 30vh; /* 残りの高さ (約30vh) を使用 */
             display: flex;
@@ -103,8 +118,6 @@
                 
                 if(data[1]) createTable(data[1].slice(0,3), [data[2].slice(0,3)]);
                 
-                // 2つ目のテーブル（各空港）は非表示のまま維持
-                
                 if(data[7]) {
                     const kpiRows = data.slice(8).filter(r => 
                         r[0] && 
@@ -127,10 +140,9 @@
                     options: { cutout: '80%', plugins: { legend: { display: false } } }
                 });
 
-                // 【変更】ローディングを消し、コンテンツ全体と画像エリアを表示
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('content-wrap').style.display = 'flex'; // コンテナを表示
-                document.getElementById('image-section').style.display = 'flex'; // 画像エリアを表示
+                document.getElementById('content-wrap').style.display = 'flex'; 
+                document.getElementById('image-section').style.display = 'flex'; 
 
             } catch(e) { document.getElementById('loading').textContent = 'エラーが発生しました'; }
         }
